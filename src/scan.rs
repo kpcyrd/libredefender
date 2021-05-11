@@ -1,7 +1,7 @@
-use crate::config::{Config, ScanConfig};
-use crate::db;
+use crate::args;
+use crate::config::{self, ScanConfig};
+use crate::db::Database;
 use crate::errors::*;
-use crate::scan;
 use chrono::TimeZone;
 use chrono::{DateTime, Utc};
 use clamav_rs::engine::{Engine, ScanResult};
@@ -150,7 +150,20 @@ impl Scanner {
     }
 }
 
-pub fn run(config: Config, paths: Vec<PathBuf>, data: &mut db::Data) -> Result<()> {
+pub fn run(mut args: args::Scan) -> Result<()> {
+    let config = config::load().context("Failed to load config")?;
+
+    let mut db = Database::load().context("Failed to load database")?;
+
+    if args.paths.is_empty() {
+        info!("Empty arguments, defaulting to home directory");
+        let home_dir = dirs::home_dir().context("Failed to find home directory")?;
+        args.paths.push(home_dir);
+    }
+
+    let data = db.data_mut();
+    data.threats.clear();
+
     let (results_tx, results_rx) = crossbeam_channel::unbounded();
     let (fs_tx, fs_rx) = crossbeam_channel::bounded::<DirEntry>(128);
 
@@ -175,9 +188,9 @@ pub fn run(config: Config, paths: Vec<PathBuf>, data: &mut db::Data) -> Result<(
     mem::drop(results_tx);
 
     thread::spawn(move || {
-        for path in paths {
+        for path in args.paths {
             info!("Scanning directory {}...", path.display());
-            if let Err(err) = scan::ingest_directory(&config.scan, &fs_tx, &path) {
+            if let Err(err) = ingest_directory(&config.scan, &fs_tx, &path) {
                 error!("Failed to scan directory: {:#}", err);
             }
         }
@@ -190,6 +203,9 @@ pub fn run(config: Config, paths: Vec<PathBuf>, data: &mut db::Data) -> Result<(
         data.threats.push(threat);
     }
     info!("Scan finished, found {} threat(s)!", data.threats.len());
+
+    data.last_scan = Some(Utc::now());
+    db.store().context("Failed to write database")?;
 
     Ok(())
 }

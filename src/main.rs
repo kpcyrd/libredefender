@@ -2,11 +2,11 @@ use chrono::{DateTime, Utc};
 use colored::{Color, ColoredString, Colorize};
 use env_logger::Env;
 use libredefender::args::{Args, SubCommand};
-use libredefender::config;
 use libredefender::db::Database;
 use libredefender::errors::*;
 use libredefender::nice;
 use libredefender::scan;
+use libredefender::schedule;
 use num_format::{Locale, ToFormattedString};
 use std::borrow::Cow;
 use structopt::StructOpt;
@@ -68,29 +68,15 @@ fn main() -> Result<()> {
                 "Start a scan with `libredefender scan` or run `libredefender help`".green()
             );
         }
-        Some(SubCommand::Scan(mut args)) => {
+        Some(SubCommand::Scan(args)) => {
             nice::setup()?;
-
-            let mut db = Database::load().context("Failed to load database")?;
-
-            if args.paths.is_empty() {
-                info!("Empty arguments, defaulting to home directory");
-                let home_dir = dirs::home_dir().context("Failed to find home directory")?;
-                args.paths.push(home_dir);
-            }
-
-            let config = config::load().context("Failed to load config")?;
-
             scan::init()?;
-            let data = db.data_mut();
-            data.threats.clear();
-            scan::run(config, args.paths, data)?;
-            data.last_scan = Some(Utc::now());
-
-            db.store().context("Failed to write database")?;
+            scan::run(args)?;
         }
-        Some(SubCommand::Scheduler(_args)) => {
-            todo!()
+        Some(SubCommand::Scheduler(args)) => {
+            nice::setup()?;
+            scan::init()?;
+            schedule::run(args)?;
         }
         Some(SubCommand::Completions(args)) => args.gen_completions()?,
     }
