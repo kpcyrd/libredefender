@@ -29,6 +29,8 @@ package() {
   "${pkgdir}/usr/bin/libredefender" completions bash > "${pkgdir}/usr/share/bash-completion/completions/libredefender"
   "${pkgdir}/usr/bin/libredefender" completions zsh > "${pkgdir}/usr/share/zsh/site-functions/_libredefender"
   "${pkgdir}/usr/bin/libredefender" completions fish > "${pkgdir}/usr/share/fish/vendor_completions.d/libredefender.fish"
+
+  install -Dm 644 contrib/libredefender.desktop -t "${pkgdir}/etc/xdg/autostart"
 }
 
 # vim: ts=2 sw=2 et:

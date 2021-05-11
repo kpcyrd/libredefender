@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=LibreDefender
+Comment=An antivirus system
+Exec=/usr/bin/libredefender scheduler
