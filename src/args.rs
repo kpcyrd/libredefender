@@ -13,6 +13,8 @@ pub struct Args {
     /// More verbose logs
     #[structopt(short, long, global = true, parse(from_occurrences))]
     pub verbose: u8,
+    #[structopt(short = "C", long, global = true)]
+    pub colors: bool,
     #[structopt(short = "D", long, global = true)]
     pub data: Option<PathBuf>,
     #[structopt(subcommand)]

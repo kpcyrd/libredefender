@@ -40,6 +40,10 @@ fn main() -> Result<()> {
     };
     env_logger::init_from_env(Env::default().default_filter_or(logging));
 
+    if args.colors {
+        colored::control::set_override(true);
+    }
+
     match args.subcommand {
         None => {
             let db = Database::load().context("Failed to load database")?;
