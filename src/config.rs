@@ -1,5 +1,6 @@
 use crate::errors::*;
 use crate::patterns::Pattern;
+use crate::schedule::PreferedHours;
 use human_size::{Size, SpecificSize};
 use serde::{de, Deserialize, Deserializer};
 use std::path::{Path, PathBuf};
@@ -29,7 +30,12 @@ pub struct UpdateConfig {
 }
 
 #[derive(Debug, Default, Deserialize)]
-pub struct ScheduleConfig {}
+pub struct ScheduleConfig {
+    // TODO we assume daily for now
+    // pub every: Option<String>,
+    // pub tolerance: Option<String>,
+    pub prefered_hours: Option<PreferedHours>,
+}
 
 // config::File::new expects &str instead of &Path
 fn path_to_string(path: &Path) -> Result<String> {
