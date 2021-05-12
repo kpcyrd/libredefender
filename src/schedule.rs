@@ -3,13 +3,12 @@ use crate::config;
 use crate::db::Database;
 use crate::errors::*;
 use crate::scan;
-use chrono::Local;
-use chrono::{DateTime, Datelike, NaiveTime, TimeZone, Timelike};
+use chrono::{DateTime, Datelike, Local, NaiveTime, TimeZone, Timelike, Utc};
 use rand::Rng;
 use serde::{de, Deserialize, Deserializer};
+use std::cmp;
 use std::str::FromStr;
 use std::thread;
-use std::time::Duration;
 
 #[derive(Debug, PartialEq)]
 pub struct PreferedHours {
@@ -90,11 +89,44 @@ impl<'de> Deserialize<'de> for PreferedHours {
     }
 }
 
+fn robust_sleep(sleep: chrono::Duration) -> Result<()> {
+    let target_time = Utc::now() + sleep;
+
+    let duration_seconds = sleep.num_seconds() as u64;
+    let hours = duration_seconds / 60 / 60;
+    let minutes = (duration_seconds / 60) % 60;
+    let seconds = duration_seconds % 60;
+
+    info!(
+        "Sleeping for {}h {}m {}s ({})...",
+        hours,
+        minutes,
+        seconds,
+        target_time
+            .with_timezone(&Local)
+            .format("%Y-%m-%d %H:%M:%S %Z")
+    );
+
+    loop {
+        let remaining = target_time.signed_duration_since(Utc::now());
+        trace!("Remaining time: {:?}", remaining);
+        if remaining <= chrono::Duration::zero() {
+            break;
+        }
+
+        let next_sleep = cmp::min(chrono::Duration::seconds(600), remaining);
+        trace!("Sleeping for {:?}", next_sleep);
+
+        thread::sleep(next_sleep.to_std()?);
+    }
+
+    Ok(())
+}
+
 pub fn run(_args: args::Scheduler) -> Result<()> {
     let interval = chrono::Duration::hours(24);
 
     loop {
-        // TODO: this should be Local
         let now = Local::now();
 
         let config = config::load().context("Failed to load config")?;
@@ -122,20 +154,9 @@ pub fn run(_args: args::Scheduler) -> Result<()> {
         } else {
             chrono::Duration::zero()
         };
-        let target_time = Local::now() + sleep;
 
-        let duration_seconds = sleep.num_seconds() as u64;
-        let hours = duration_seconds / 60 / 60;
-        let minutes = (duration_seconds / 60) % 60;
-        let seconds = duration_seconds % 60;
-        info!(
-            "Sleeping for {}h {}m {}s ({})...",
-            hours,
-            minutes,
-            seconds,
-            target_time.format("%Y-%m-%d %H:%M:%S %Z")
-        );
-        thread::sleep(Duration::from_secs(duration_seconds));
+        robust_sleep(sleep)?;
+
         if let Err(err) = scan::run(args::Scan { paths: vec![] }) {
             error!("Error: {:#}", err);
         }
