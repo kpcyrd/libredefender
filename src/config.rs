@@ -65,6 +65,14 @@ pub fn load() -> Result<Config> {
 #[derive(Debug)]
 pub struct HumanSize(SpecificSize);
 
+use human_size::Byte;
+
+impl HumanSize {
+    pub fn as_bytes(&self) -> u64 {
+        self.0.into::<Byte>().value() as u64
+    }
+}
+
 impl FromStr for HumanSize {
     type Err = Error;
 

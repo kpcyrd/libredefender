@@ -55,6 +55,22 @@ pub fn matches(config: &ScanConfig, e: &DirEntry) -> bool {
         }
     }
 
+    if let Some(skip_larger_than) = &config.skip_larger_than {
+        if e.file_type().is_file() {
+            if let Ok(md) = e.metadata() {
+                let size = md.len();
+                if size > skip_larger_than.as_bytes() {
+                    debug!(
+                        "Skipping path {}: size exceeds limit ({})",
+                        path.display(),
+                        size
+                    );
+                    return false;
+                }
+            }
+        }
+    }
+
     true
 }
 
