@@ -3,7 +3,7 @@ use crate::config;
 use crate::db::Database;
 use crate::errors::*;
 use crate::scan;
-use chrono::Utc;
+use chrono::Local;
 use chrono::{DateTime, Datelike, NaiveTime, TimeZone, Timelike};
 use rand::Rng;
 use serde::{de, Deserialize, Deserializer};
@@ -18,14 +18,14 @@ pub struct PreferedHours {
 }
 
 impl PreferedHours {
-    fn until_next_start(&self, dt: DateTime<Utc>) -> chrono::Duration {
+    fn until_next_start(&self, dt: DateTime<Local>) -> chrono::Duration {
         let t = dt.time();
         if self.start <= t && (self.end > t || self.end < self.start) {
             // now
             chrono::Duration::zero()
         } else if t < self.start {
             // today
-            let next_start = Utc.ymd(dt.year(), dt.month(), dt.day()).and_hms(
+            let next_start = Local.ymd(dt.year(), dt.month(), dt.day()).and_hms(
                 self.start.hour(),
                 self.start.minute(),
                 self.start.second(),
@@ -33,7 +33,7 @@ impl PreferedHours {
             next_start - dt
         } else {
             // tomorrow
-            let next_start = Utc.ymd(dt.year(), dt.month(), dt.day()).and_hms(
+            let next_start = Local.ymd(dt.year(), dt.month(), dt.day()).and_hms(
                 self.start.hour(),
                 self.start.minute(),
                 self.start.second(),
@@ -42,11 +42,11 @@ impl PreferedHours {
         }
     }
 
-    fn until_next_end(&self, dt: DateTime<Utc>) -> chrono::Duration {
+    fn until_next_end(&self, dt: DateTime<Local>) -> chrono::Duration {
         let t = dt.time();
         if self.end > t {
             // today
-            let next_end = Utc.ymd(dt.year(), dt.month(), dt.day()).and_hms(
+            let next_end = Local.ymd(dt.year(), dt.month(), dt.day()).and_hms(
                 self.end.hour(),
                 self.end.minute(),
                 self.end.second(),
@@ -54,7 +54,7 @@ impl PreferedHours {
             next_end - dt
         } else {
             // tomorrow
-            let next_end = Utc.ymd(dt.year(), dt.month(), dt.day()).and_hms(
+            let next_end = Local.ymd(dt.year(), dt.month(), dt.day()).and_hms(
                 self.end.hour(),
                 self.end.minute(),
                 self.end.second(),
@@ -95,7 +95,7 @@ pub fn run(_args: args::Scheduler) -> Result<()> {
 
     loop {
         // TODO: this should be Local
-        let now = Utc::now();
+        let now = Local::now();
 
         let config = config::load().context("Failed to load config")?;
 
@@ -103,7 +103,7 @@ pub fn run(_args: args::Scheduler) -> Result<()> {
         let data = db.data();
 
         let sleep = if let Some(last_scan) = data.last_scan {
-            let duration_since_last_scan = now - last_scan;
+            let duration_since_last_scan = now - last_scan.with_timezone(&Local);
 
             if duration_since_last_scan > interval {
                 chrono::Duration::zero()
@@ -117,17 +117,24 @@ pub fn run(_args: args::Scheduler) -> Result<()> {
 
                 start + chrono::Duration::seconds(jitter)
             } else {
-                interval - (now - last_scan)
+                interval - (now - last_scan.with_timezone(&Local))
             }
         } else {
             chrono::Duration::zero()
         };
+        let target_time = Local::now() + sleep;
 
         let duration_seconds = sleep.num_seconds() as u64;
         let hours = duration_seconds / 60 / 60;
         let minutes = (duration_seconds / 60) % 60;
         let seconds = duration_seconds % 60;
-        info!("Sleeping for {}h {}m {}s...", hours, minutes, seconds);
+        info!(
+            "Sleeping for {}h {}m {}s ({})...",
+            hours,
+            minutes,
+            seconds,
+            target_time.format("%Y-%m-%d %H:%M:%S %Z")
+        );
         thread::sleep(Duration::from_secs(duration_seconds));
         if let Err(err) = scan::run(args::Scan { paths: vec![] }) {
             error!("Error: {:#}", err);
@@ -139,7 +146,6 @@ pub fn run(_args: args::Scheduler) -> Result<()> {
 mod tests {
     use super::*;
     use chrono::TimeZone;
-    use chrono::Utc;
 
     #[test]
     fn test_parse_prefered_hours() {
@@ -169,7 +175,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_start() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(5 * 3600 + 23 * 60));
@@ -177,7 +183,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_end() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(19 * 3600 + 23 * 60));
@@ -185,7 +191,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_start_now() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(23, 37, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(23, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(0));
@@ -193,7 +199,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_end_now() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(23, 37, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(23, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(9 * 3600 + 23 * 60));
@@ -201,7 +207,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_start_now2() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(0));
@@ -209,7 +215,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_end_now2() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(5 * 3600 + 23 * 60));
@@ -217,7 +223,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_start_later() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(9, 0, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(9, 0, 0);
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(4 * 3600 + 37 * 60));
@@ -225,7 +231,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_end_later() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(9, 0, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(9, 0, 0);
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(14 * 3600));
@@ -233,7 +239,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_start_tomorrow() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(14 * 3600 + 23 * 60));
@@ -241,7 +247,7 @@ mod tests {
 
     #[test]
     fn test_until_next_prefered_hour_end_tomorrow() {
-        let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(19 * 3600 + 23 * 60));
