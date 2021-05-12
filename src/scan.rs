@@ -248,6 +248,6 @@ mod tests {
             b"ClamAV-VDB:09 May 2021 07-08 -0400:26165:3978101:63:X:X:raynman:1620558516    ",
         )
         .unwrap();
-        assert_eq!(dt, Utc.ymd(2021, 5, 9).and_hms(11, 08, 36));
+        assert_eq!(dt, Utc.ymd(2021, 5, 9).and_hms(11, 8, 36));
     }
 }
