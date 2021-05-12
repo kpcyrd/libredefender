@@ -3,7 +3,7 @@
 pkgname=libredefender
 pkgver=0.0.0
 pkgrel=1
-pkgdesc='TODO'
+pkgdesc='Light-weight anti virus scanner for Linux'
 url='https://github.com/kpcyrd/libredefender'
 arch=('x86_64')
 license=('GPL3')

@@ -32,4 +32,6 @@ path = "/var/lib/clamav"
 
 ## License
 
-GPLv3+
+This code is dual-licensed as `GPLv2 OR GPLv3+`. libclamav is currently likely to be considered GPLv2-only, so the final binary is going to be GPLv2. If the need for GPLv2 is resolved we're likely going to drop GPLv2 compatibility.
+
+Note that both licenses have a "No warranty" clause.

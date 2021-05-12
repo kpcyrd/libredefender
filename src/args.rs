@@ -25,7 +25,7 @@ pub struct Args {
 pub enum SubCommand {
     /// Scan directories for signature matches
     Scan(Scan),
-    /// TODO
+    /// Run a background service that scans periodically
     Scheduler(Scheduler),
     /// Generate shell completions
     Completions(Completions),
