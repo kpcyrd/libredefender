@@ -171,7 +171,7 @@ mod tests {
     fn test_until_next_prefered_hour_start() {
         let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
-        let duration = ph.until_next_start(&now);
+        let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(5 * 3600 + 23 * 60));
     }
 
@@ -179,7 +179,7 @@ mod tests {
     fn test_until_next_prefered_hour_end() {
         let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
-        let duration = ph.until_next_end(&now);
+        let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(19 * 3600 + 23 * 60));
     }
 
@@ -187,7 +187,7 @@ mod tests {
     fn test_until_next_prefered_hour_start_now() {
         let now = Utc.ymd(1970, 1, 1).and_hms(23, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
-        let duration = ph.until_next_start(&now);
+        let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(0));
     }
 
@@ -195,7 +195,7 @@ mod tests {
     fn test_until_next_prefered_hour_end_now() {
         let now = Utc.ymd(1970, 1, 1).and_hms(23, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
-        let duration = ph.until_next_end(&now);
+        let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(9 * 3600 + 23 * 60));
     }
 
@@ -203,7 +203,7 @@ mod tests {
     fn test_until_next_prefered_hour_start_now2() {
         let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
-        let duration = ph.until_next_start(&now);
+        let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(0));
     }
 
@@ -211,7 +211,7 @@ mod tests {
     fn test_until_next_prefered_hour_end_now2() {
         let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
-        let duration = ph.until_next_end(&now);
+        let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(5 * 3600 + 23 * 60));
     }
 
@@ -219,7 +219,7 @@ mod tests {
     fn test_until_next_prefered_hour_start_later() {
         let now = Utc.ymd(1970, 1, 1).and_hms(9, 0, 0);
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
-        let duration = ph.until_next_start(&now);
+        let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(4 * 3600 + 37 * 60));
     }
 
@@ -227,7 +227,7 @@ mod tests {
     fn test_until_next_prefered_hour_end_later() {
         let now = Utc.ymd(1970, 1, 1).and_hms(9, 0, 0);
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
-        let duration = ph.until_next_end(&now);
+        let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(14 * 3600));
     }
 
@@ -235,7 +235,7 @@ mod tests {
     fn test_until_next_prefered_hour_start_tomorrow() {
         let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
-        let duration = ph.until_next_start(&now);
+        let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(14 * 3600 + 23 * 60));
     }
 
@@ -243,7 +243,7 @@ mod tests {
     fn test_until_next_prefered_hour_end_tomorrow() {
         let now = Utc.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
-        let duration = ph.until_next_end(&now);
+        let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(19 * 3600 + 23 * 60));
     }
 }
