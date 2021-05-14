@@ -139,13 +139,13 @@ pub fn run(_args: args::Scheduler) -> Result<()> {
 
             if duration_since_last_scan > interval {
                 chrono::Duration::zero()
-            } else if let Some(ph) = config.schedule.prefered_hours {
+            } else if let Some(ph) = config.schedule.preferred_hours {
                 let start = ph.until_next_start(now);
                 let end = ph.until_next_end(now);
 
                 let mut rng = rand::thread_rng();
-                let prefered_hours_duration = (end - start).num_seconds();
-                let jitter = rng.gen_range(0..prefered_hours_duration);
+                let preferred_hours_duration = (end - start).num_seconds();
+                let jitter = rng.gen_range(0..preferred_hours_duration);
 
                 start + chrono::Duration::seconds(jitter)
             } else {
@@ -169,7 +169,7 @@ mod tests {
     use chrono::TimeZone;
 
     #[test]
-    fn test_parse_prefered_hours() {
+    fn test_parse_preferred_hours() {
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         assert_eq!(
             ph,
@@ -181,7 +181,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_prefered_hours_invalid() {
+    fn test_parse_preferred_hours_invalid() {
         PreferedHours::from_str("a").err().unwrap();
         PreferedHours::from_str("a-").err().unwrap();
         PreferedHours::from_str("a--").err().unwrap();
@@ -195,7 +195,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_start() {
+    fn test_until_next_preferred_hour_start() {
         let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_start(now);
@@ -203,7 +203,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_end() {
+    fn test_until_next_preferred_hour_end() {
         let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_end(now);
@@ -211,7 +211,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_start_now() {
+    fn test_until_next_preferred_hour_start_now() {
         let now = Local.ymd(1970, 1, 1).and_hms(23, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_start(now);
@@ -219,7 +219,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_end_now() {
+    fn test_until_next_preferred_hour_end_now() {
         let now = Local.ymd(1970, 1, 1).and_hms(23, 37, 0);
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_end(now);
@@ -227,7 +227,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_start_now2() {
+    fn test_until_next_preferred_hour_start_now2() {
         let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
         let duration = ph.until_next_start(now);
@@ -235,7 +235,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_end_now2() {
+    fn test_until_next_preferred_hour_end_now2() {
         let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
         let duration = ph.until_next_end(now);
@@ -243,7 +243,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_start_later() {
+    fn test_until_next_preferred_hour_start_later() {
         let now = Local.ymd(1970, 1, 1).and_hms(9, 0, 0);
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
         let duration = ph.until_next_start(now);
@@ -251,7 +251,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_end_later() {
+    fn test_until_next_preferred_hour_end_later() {
         let now = Local.ymd(1970, 1, 1).and_hms(9, 0, 0);
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
         let duration = ph.until_next_end(now);
@@ -259,7 +259,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_start_tomorrow() {
+    fn test_until_next_preferred_hour_start_tomorrow() {
         let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
         let duration = ph.until_next_start(now);
@@ -267,7 +267,7 @@ mod tests {
     }
 
     #[test]
-    fn test_until_next_prefered_hour_end_tomorrow() {
+    fn test_until_next_preferred_hour_end_tomorrow() {
         let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
         let duration = ph.until_next_end(now);

@@ -34,7 +34,7 @@ pub struct ScheduleConfig {
     // TODO we assume daily for now
     // pub every: Option<String>,
     // pub tolerance: Option<String>,
-    pub prefered_hours: Option<PreferedHours>,
+    pub preferred_hours: Option<PreferedHours>,
 }
 
 // config::File::new expects &str instead of &Path

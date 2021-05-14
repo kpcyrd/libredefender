@@ -28,6 +28,7 @@ skip_larger_than = "30MiB"
 path = "/var/lib/clamav"
 
 [schedule]
+preferred_hours = "09:00:00-19:00:00"
 ```
 
 ## License
