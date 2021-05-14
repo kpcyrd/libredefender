@@ -1,4 +1,5 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, Utc};
+use chrono_humanize::HumanTime;
 use colored::{Color, ColoredString, Colorize};
 use env_logger::Env;
 use libredefender::args::{Args, SubCommand};
@@ -23,7 +24,12 @@ fn format_num(num: usize, zero_is_bad: bool) -> ColoredString {
 
 fn format_datetime(dt: &Option<DateTime<Utc>>) -> Cow<'_, str> {
     if let Some(dt) = dt {
-        Cow::Owned(dt.format("%Y-%m-%d %H:%M:%S %Z").to_string())
+        let elapsed_since = dt.signed_duration_since(Utc::now());
+        Cow::Owned(format!(
+            "{} {}",
+            dt.with_timezone(&Local).format("%Y-%m-%d %H:%M:%S %Z"),
+            format!("({})", HumanTime::from(elapsed_since)).bold()
+        ))
     } else {
         Cow::Borrowed("-")
     }

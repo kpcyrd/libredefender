@@ -15,6 +15,7 @@ edition = "2018"
 anyhow = "1.0.40"
 atoi = "0.4.0"
 chrono = { version = "0.4.19", features = ["serde"] }
+chrono-humanize = "0.2.1"
 clamav-rs = "0.5.3"
 colored = "2.0.0"
 config = { version = "0.11", default-features = false, features = ["toml"] }
