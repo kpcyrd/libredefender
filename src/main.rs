@@ -7,10 +7,9 @@ use libredefender::errors::*;
 use libredefender::nice;
 use libredefender::scan;
 use libredefender::schedule;
+use libredefender::utils;
 use num_format::{Locale, ToFormattedString};
 use std::borrow::Cow;
-use std::fs;
-use std::io;
 use structopt::StructOpt;
 
 fn format_num(num: usize, zero_is_bad: bool) -> ColoredString {
@@ -91,17 +90,20 @@ fn main() -> Result<()> {
             let mut deleted = Vec::new();
 
             for (path, names) in &data.threats {
-                if args.delete_all {
-                    info!("Deleting {:?} at {:?}", names, path);
-                    if match fs::remove_file(&path) {
-                        Ok(()) => true,
-                        Err(err) if err.kind() == io::ErrorKind::NotFound => true,
-                        Err(err) => {
+                if args.delete || args.delete_all {
+                    let should_delete = if args.delete_all {
+                        true
+                    } else {
+                        utils::ask_confirmation(&format!("Delete {:?} at {:?}", names, path))?
+                    };
+
+                    if should_delete {
+                        info!("Deleting {:?} at {:?}", names, path);
+                        if let Err(err) = utils::ensure_deleted(&path) {
                             error!("Failed to delete {:?}: {:#}", path, err);
-                            false
+                        } else {
+                            deleted.push(path.to_owned());
                         }
-                    } {
-                        deleted.push(path.to_owned());
                     }
                 } else {
                     for name in names {

@@ -6,3 +6,4 @@ pub mod nice;
 pub mod patterns;
 pub mod scan;
 pub mod schedule;
+pub mod utils;

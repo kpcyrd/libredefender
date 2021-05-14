@@ -44,8 +44,11 @@ pub struct Scheduler {}
 
 #[derive(StructOpt)]
 pub struct Infections {
+    /// Interactively offer deletion for every file
+    #[structopt(short, long, group = "action")]
+    pub delete: bool,
     /// Delete all files without further confirmation (DANGER!)
-    #[structopt(long)]
+    #[structopt(long, group = "action")]
     pub delete_all: bool,
 }
 
