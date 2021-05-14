@@ -123,7 +123,7 @@ fn robust_sleep(sleep: chrono::Duration) -> Result<()> {
     Ok(())
 }
 
-pub fn run(_args: args::Scheduler) -> Result<()> {
+pub fn run(_args: &args::Scheduler) -> Result<()> {
     let interval = chrono::Duration::hours(24);
 
     loop {
@@ -134,26 +134,31 @@ pub fn run(_args: args::Scheduler) -> Result<()> {
         let db = Database::load().context("Failed to load database")?;
         let data = db.data();
 
-        let sleep = if let Some(last_scan) = data.last_scan {
-            let duration_since_last_scan = now - last_scan.with_timezone(&Local);
+        let sleep = data
+            .last_scan
+            .map_or_else(chrono::Duration::zero, |last_scan| {
+                let duration_since_last_scan = now - last_scan.with_timezone(&Local);
 
-            if duration_since_last_scan > interval {
-                chrono::Duration::zero()
-            } else if let Some(ph) = config.schedule.preferred_hours {
-                let start = ph.until_next_start(now);
-                let end = ph.until_next_end(now);
+                if duration_since_last_scan > interval {
+                    chrono::Duration::zero()
+                } else {
+                    config.schedule.preferred_hours.map_or_else(
+                        // no preferred hours
+                        || interval - (now - last_scan.with_timezone(&Local)),
+                        // there are preferred hours
+                        |ph| {
+                            let start = ph.until_next_start(now);
+                            let end = ph.until_next_end(now);
 
-                let mut rng = rand::thread_rng();
-                let preferred_hours_duration = (end - start).num_seconds();
-                let jitter = rng.gen_range(0..preferred_hours_duration);
+                            let mut rng = rand::thread_rng();
+                            let preferred_hours_duration = (end - start).num_seconds();
+                            let jitter = rng.gen_range(0..preferred_hours_duration);
 
-                start + chrono::Duration::seconds(jitter)
-            } else {
-                interval - (now - last_scan.with_timezone(&Local))
-            }
-        } else {
-            chrono::Duration::zero()
-        };
+                            start + chrono::Duration::seconds(jitter)
+                        },
+                    )
+                }
+            });
 
         robust_sleep(sleep)?;
 

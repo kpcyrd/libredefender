@@ -9,6 +9,7 @@ pub struct Pattern(glob::Pattern);
 
 impl Pattern {
     #[inline]
+    #[must_use]
     pub fn matches(&self, path: &Path) -> bool {
         self.0.matches_path(path)
     }

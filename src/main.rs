@@ -1,3 +1,9 @@
+#![allow(
+    clippy::wildcard_imports,
+    clippy::non_ascii_literal,
+    clippy::missing_errors_doc
+)]
+
 use chrono::{DateTime, Local, Utc};
 use chrono_humanize::HumanTime;
 use colored::{Color, ColoredString, Colorize};
@@ -108,7 +114,7 @@ fn main() -> Result<()> {
         Some(SubCommand::Scheduler(args)) => {
             nice::setup()?;
             scan::init()?;
-            schedule::run(args)?;
+            schedule::run(&args)?;
         }
         Some(SubCommand::Infections(args)) => {
             let mut db = Database::load().context("Failed to load database")?;
@@ -129,7 +135,7 @@ fn main() -> Result<()> {
                         if let Err(err) = utils::ensure_deleted(&path) {
                             error!("Failed to delete {:?}: {:#}", path, err);
                         } else {
-                            deleted.push(path.to_owned());
+                            deleted.push(path.clone());
                         }
                     }
                 } else {

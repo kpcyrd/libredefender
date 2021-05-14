@@ -1,7 +1,7 @@
 use crate::errors::*;
 use crate::patterns::Pattern;
 use crate::schedule::PreferedHours;
-use human_size::{Size, SpecificSize};
+use human_size::{Byte, Size, SpecificSize};
 use serde::{de, Deserialize, Deserializer};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -65,9 +65,8 @@ pub fn load() -> Result<Config> {
 #[derive(Debug)]
 pub struct HumanSize(SpecificSize);
 
-use human_size::Byte;
-
 impl HumanSize {
+    #[must_use]
     pub fn as_bytes(&self) -> u64 {
         self.0.into::<Byte>().value() as u64
     }

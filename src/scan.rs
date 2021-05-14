@@ -32,10 +32,10 @@ fn is_hidden(entry: &DirEntry) -> bool {
     entry
         .file_name()
         .to_str()
-        .map(|s| s.starts_with('.'))
-        .unwrap_or(false)
+        .map_or(false, |s| s.starts_with('.'))
 }
 
+#[must_use]
 pub fn matches(config: &ScanConfig, e: &DirEntry) -> bool {
     let path = e.path();
 
@@ -140,10 +140,12 @@ impl Scanner {
         })
     }
 
+    #[must_use]
     pub fn signature_count(&self) -> usize {
         self.signature_count as usize
     }
 
+    #[must_use]
     pub fn signatures_age(&self) -> DateTime<Utc> {
         self.signatures_age
     }
@@ -163,8 +165,7 @@ impl Scanner {
                 warn!("Found threat: {} ({:?})", path.display(), name);
                 results_tx.send((path.to_path_buf(), name)).ok();
             }
-            ScanResult::Clean => (),
-            ScanResult::Whitelisted => (),
+            ScanResult::Clean | ScanResult::Whitelisted => (),
         }
 
         Ok(())

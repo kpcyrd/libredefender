@@ -45,10 +45,12 @@ impl Database {
         Ok(())
     }
 
+    #[must_use]
     pub fn data(&self) -> &Data {
         &self.data
     }
 
+    #[must_use]
     pub fn data_mut(&mut self) -> &mut Data {
         &mut self.data
     }
