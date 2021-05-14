@@ -6,7 +6,8 @@ libredefender is an antivirus program featuring:
 
 - **Industry standards** - Scanning is implemented with libclamav
 - **Signatures** - We have that
-- **Scheduling** - Starts scans periodically and lets you know if there's something to do
+- **Scheduling** - Starts scans periodically so you don't have to
+- **Checkmarks** - Extra green
 
 The process is trying to change both io and processor priority to idle.
 

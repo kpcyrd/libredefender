@@ -29,6 +29,14 @@ fn format_datetime(dt: &Option<DateTime<Utc>>) -> Cow<'_, str> {
     }
 }
 
+fn print_line(line: &str, good: bool) {
+    if good {
+        println!(" ✅ {}", line);
+    } else {
+        println!(" ❌ {}", line);
+    }
+}
+
 fn main() -> Result<()> {
     let args = Args::from_args();
 
@@ -50,23 +58,36 @@ fn main() -> Result<()> {
             let db = Database::load().context("Failed to load database")?;
             let data = db.data();
 
-            println!(
-                "Last scan                 {}",
-                format_datetime(&data.last_scan)
+            print_line(
+                &format!(
+                    "Last scan                 {}",
+                    format_datetime(&data.last_scan)
+                ),
+                data.last_scan.is_some(),
             );
-            println!(
-                "Threats present           {}",
-                format_num(data.threats.len(), false)
+            print_line(
+                &format!(
+                    "Threats present           {}",
+                    format_num(data.threats.len(), false)
+                ),
+                data.threats.is_empty(),
             );
 
-            println!(
-                "Signatures                {}",
-                format_num(data.signature_count, true)
+            print_line(
+                &format!(
+                    "Signatures                {}",
+                    format_num(data.signature_count, true)
+                ),
+                data.signature_count > 0,
             );
-            println!(
-                "Signatures updated        {}",
-                format_datetime(&data.signatures_age)
+            print_line(
+                &format!(
+                    "Signatures updated        {}",
+                    format_datetime(&data.signatures_age)
+                ),
+                data.signatures_age.is_some(),
             );
+
             println!();
             println!(
                 "{}",

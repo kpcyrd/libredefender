@@ -12,8 +12,7 @@ pub fn ask_confirmation(text: &str) -> Result<bool> {
     let mut input = String::new();
     io::stdin().read_line(&mut input)?;
 
-    let mut input = input.chars().next()
-        .context("Stdin was closed")?;
+    let mut input = input.chars().next().context("Stdin was closed")?;
 
     input.make_ascii_lowercase();
     Ok(input == 'y')
