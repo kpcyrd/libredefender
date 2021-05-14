@@ -27,6 +27,8 @@ pub enum SubCommand {
     Scan(Scan),
     /// Run a background service that scans periodically
     Scheduler(Scheduler),
+    /// List threats that have been detected
+    Infections(Infections),
     /// Generate shell completions
     Completions(Completions),
 }
@@ -39,6 +41,9 @@ pub struct Scan {
 
 #[derive(StructOpt)]
 pub struct Scheduler {}
+
+#[derive(StructOpt)]
+pub struct Infections {}
 
 #[derive(Debug, Clone, StructOpt)]
 pub struct Completions {

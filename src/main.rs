@@ -82,6 +82,18 @@ fn main() -> Result<()> {
             scan::init()?;
             schedule::run(args)?;
         }
+        Some(SubCommand::Infections(_args)) => {
+            let db = Database::load().context("Failed to load database")?;
+            let data = db.data();
+
+            for (path, name) in &data.threats {
+                println!(
+                    "{} => {}",
+                    name.red().bold(),
+                    format!("{:?}", path).yellow(),
+                );
+            }
+        }
         Some(SubCommand::Completions(args)) => args.gen_completions()?,
     }
 
