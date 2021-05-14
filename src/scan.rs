@@ -74,10 +74,17 @@ pub fn matches(config: &ScanConfig, e: &DirEntry) -> bool {
     true
 }
 
-pub fn ingest_directory(cfg: &ScanConfig, tx: &Sender<DirEntry>, path: &Path) -> Result<()> {
+pub fn ingest_directory(cfg: &ScanConfig, tx: &Sender<DirEntry>, path: &Path) {
     let walker = WalkDir::new(path).into_iter();
     for entry in walker.filter_entry(|e| matches(cfg, e)) {
-        let entry = entry?;
+        let entry = match entry {
+            Ok(entry) => entry,
+            Err(err) => {
+                warn!("Failed to scan directory: {:#}", err);
+                continue;
+            }
+        };
+
         let path = entry.path();
         let ft = entry.file_type();
 
@@ -97,8 +104,6 @@ pub fn ingest_directory(cfg: &ScanConfig, tx: &Sender<DirEntry>, path: &Path) ->
             break;
         }
     }
-
-    Ok(())
 }
 
 pub struct Scanner {
@@ -151,7 +156,7 @@ impl Scanner {
         let hit = self
             .engine
             .scan_file(&path_str, &mut settings)
-            .map_err(|e| anyhow!("Failed to scan file: {:#}", e))?;
+            .map_err(|e| anyhow!("Failed to scan file {:?}: {:#}", path, e))?;
 
         match hit {
             ScanResult::Virus(name) => {
@@ -195,7 +200,7 @@ pub fn run(mut args: args::Scan) -> Result<()> {
         thread::spawn(move || {
             for entry in fs_rx {
                 if let Err(err) = scanner.scan_file(entry.path(), &results_tx) {
-                    error!("Failed to scan file: {:#}", err);
+                    error!("{:#}", err);
                 }
             }
             mem::drop(results_tx);
@@ -206,9 +211,7 @@ pub fn run(mut args: args::Scan) -> Result<()> {
     thread::spawn(move || {
         for path in args.paths {
             info!("Scanning directory {}...", path.display());
-            if let Err(err) = ingest_directory(&config.scan, &fs_tx, &path) {
-                error!("Failed to scan directory: {:#}", err);
-            }
+            ingest_directory(&config.scan, &fs_tx, &path);
         }
         debug!("Finished traversing directories");
     });
