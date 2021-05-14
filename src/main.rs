@@ -9,6 +9,8 @@ use libredefender::scan;
 use libredefender::schedule;
 use num_format::{Locale, ToFormattedString};
 use std::borrow::Cow;
+use std::fs;
+use std::io;
 use structopt::StructOpt;
 
 fn format_num(num: usize, zero_is_bad: bool) -> ColoredString {
@@ -82,16 +84,41 @@ fn main() -> Result<()> {
             scan::init()?;
             schedule::run(args)?;
         }
-        Some(SubCommand::Infections(_args)) => {
-            let db = Database::load().context("Failed to load database")?;
-            let data = db.data();
+        Some(SubCommand::Infections(args)) => {
+            let mut db = Database::load().context("Failed to load database")?;
+            let data = db.data_mut();
 
-            for (path, name) in &data.threats {
-                println!(
-                    "{} => {}",
-                    name.red().bold(),
-                    format!("{:?}", path).yellow(),
-                );
+            let mut deleted = Vec::new();
+
+            for (path, names) in &data.threats {
+                if args.delete_all {
+                    info!("Deleting {:?} at {:?}", names, path);
+                    if match fs::remove_file(&path) {
+                        Ok(()) => true,
+                        Err(err) if err.kind() == io::ErrorKind::NotFound => true,
+                        Err(err) => {
+                            error!("Failed to delete {:?}: {:#}", path, err);
+                            false
+                        }
+                    } {
+                        deleted.push(path.to_owned());
+                    }
+                } else {
+                    for name in names {
+                        println!(
+                            "{} => {}",
+                            name.red().bold(),
+                            format!("{:?}", path).yellow(),
+                        );
+                    }
+                }
+            }
+
+            if !deleted.is_empty() {
+                for path in deleted {
+                    data.threats.remove(&path);
+                }
+                db.store().context("Failed to write database")?;
             }
         }
         Some(SubCommand::Completions(args)) => args.gen_completions()?,

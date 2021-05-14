@@ -215,8 +215,8 @@ pub fn run(mut args: args::Scan) -> Result<()> {
 
     data.signature_count = scanner.signature_count();
     data.signatures_age = Some(scanner.signatures_age());
-    for threat in results_rx {
-        data.threats.push(threat);
+    for (path, name) in results_rx {
+        data.threats.entry(path).or_default().push(name);
     }
     info!("Scan finished, found {} threat(s)!", data.threats.len());
 

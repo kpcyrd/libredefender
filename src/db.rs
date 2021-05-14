@@ -1,6 +1,7 @@
 use crate::errors::*;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -56,7 +57,7 @@ impl Database {
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Data {
     pub last_scan: Option<DateTime<Utc>>,
-    pub threats: Vec<(PathBuf, String)>,
+    pub threats: HashMap<PathBuf, Vec<String>>,
     pub signature_count: usize,
     pub signatures_age: Option<DateTime<Utc>>,
 }

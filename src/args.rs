@@ -43,7 +43,11 @@ pub struct Scan {
 pub struct Scheduler {}
 
 #[derive(StructOpt)]
-pub struct Infections {}
+pub struct Infections {
+    /// Delete all files without further confirmation (DANGER!)
+    #[structopt(long)]
+    pub delete_all: bool,
+}
 
 #[derive(Debug, Clone, StructOpt)]
 pub struct Completions {
