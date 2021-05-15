@@ -40,8 +40,7 @@ impl Database {
 
     pub fn store(&self) -> Result<()> {
         if let Some(parent) = self.path.parent() {
-            fs::create_dir_all(parent)
-                .context("Failed to create database directory")?;
+            fs::create_dir_all(parent).context("Failed to create database directory")?;
         }
         let buf = serde_json::to_vec(&self.data)?;
         fs::write(&self.path, buf).context("Failed to write database")?;
