@@ -18,6 +18,8 @@ pub struct Config {
 #[derive(Debug, Default, Deserialize)]
 pub struct ScanConfig {
     #[serde(default)]
+    pub paths: Vec<PathBuf>,
+    #[serde(default)]
     pub excludes: Vec<Pattern>,
     #[serde(default)]
     pub skip_hidden: bool,

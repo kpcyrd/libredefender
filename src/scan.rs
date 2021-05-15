@@ -172,16 +172,22 @@ impl Scanner {
     }
 }
 
-pub fn run(mut args: args::Scan) -> Result<()> {
+pub fn run(args: args::Scan) -> Result<()> {
     let config = config::load().context("Failed to load config")?;
 
     let mut db = Database::load().context("Failed to load database")?;
 
-    if args.paths.is_empty() {
-        info!("Empty arguments, defaulting to home directory");
+    let paths = if !args.paths.is_empty() {
+        info!("Scanning provided paths: {:?}", args.paths);
+        args.paths
+    } else if !config.scan.paths.is_empty() {
+        info!("Scanning configured paths: {:?}", config.scan.paths);
+        config.scan.paths.clone()
+    } else {
         let home_dir = dirs::home_dir().context("Failed to find home directory")?;
-        args.paths.push(home_dir);
-    }
+        info!("Scanning home directory: {:?}", home_dir);
+        vec![home_dir]
+    };
 
     let data = db.data_mut();
     data.threats.clear();
@@ -210,7 +216,7 @@ pub fn run(mut args: args::Scan) -> Result<()> {
     mem::drop(results_tx);
 
     thread::spawn(move || {
-        for path in args.paths {
+        for path in paths {
             info!("Scanning directory {}...", path.display());
             ingest_directory(&config.scan, &fs_tx, &path);
         }
