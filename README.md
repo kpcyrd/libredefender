@@ -2,6 +2,8 @@
 
 Imagine the information security compliance guideline says you need an antivirus but you run Arch Linux.
 
+<p align="center"><img src="contrib/screenshot.png" alt="Screenshot showing a libredefender status report"></p>
+
 libredefender is an antivirus program featuring:
 
 - **Industry standards** - Scanning is implemented with libclamav
@@ -31,6 +33,12 @@ path = "/var/lib/clamav"
 [schedule]
 preferred_hours = "09:00:00-19:00:00"
 ```
+
+## Installation
+
+<a href="https://repology.org/project/libredefender/versions"><img align="right" src="https://repology.org/badge/vertical-allrepos/libredefender.svg" alt="Packaging status"></a>
+
+    pacman -S libredefender
 
 ## License
 
