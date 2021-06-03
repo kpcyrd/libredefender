@@ -123,7 +123,8 @@ impl Scanner {
             .map_err(|e| anyhow!("Failed to load clamav database: {:#}", e))?;
 
         info!("Checking database age...");
-        let daily_path = path.join("daily.cld");
+        let daily_path = Self::find_daily_db_path(path)?;
+
         let mut buf = [0; 512];
         read_clamav_header(&daily_path, &mut buf)?;
         let signatures_age = parse_database_age(&buf)?;
@@ -138,6 +139,18 @@ impl Scanner {
             signature_count: stats.signature_count,
             signatures_age,
         })
+    }
+
+    fn find_daily_db_path(base_dir: &Path) -> Result<PathBuf> {
+        for filename in &["daily.cld", "daily.cvd"] {
+            let daily_path = base_dir.join(filename);
+            debug!("Checking if database exists: {:?}", daily_path);
+            if daily_path.exists() {
+                return Ok(daily_path);
+            }
+        }
+
+        bail!("Couldn't find clamav database file");
     }
 
     #[must_use]
@@ -167,6 +180,8 @@ impl Scanner {
             }
             ScanResult::Clean | ScanResult::Whitelisted => (),
         }
+
+        debug!("Finished scanning file {}", path.display());
 
         Ok(())
     }
@@ -241,7 +256,8 @@ pub fn read_clamav_header(path: &Path, buf: &mut [u8]) -> Result<()> {
         bail!("Buffer has wrong size");
     }
 
-    let mut f = File::open(path).context("Failed to open clamav database")?;
+    let mut f =
+        File::open(path).with_context(|| anyhow!("Failed to open clamav database: {:?}", path))?;
     f.read_exact(buf)
         .context("Failed to read header from clamav database")?;
 
