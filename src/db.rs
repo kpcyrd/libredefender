@@ -19,20 +19,31 @@ impl Database {
 
     pub fn load() -> Result<Database> {
         let path = Self::path()?;
-        let db = match Self::load_from(path.clone()) {
-            Ok(db) => db,
-            Err(err) => {
-                warn!("Failed to open existing database, using new one: {:#}", err);
-                Database {
-                    path,
-                    data: Data::default(),
-                }
-            }
-        };
-        Ok(db)
+        if let Some(db) = Self::load_from(path.clone()) {
+            Ok(db)
+        } else {
+            Ok(Database {
+                path,
+                data: Data::default(),
+            })
+        }
     }
 
-    pub fn load_from(path: PathBuf) -> Result<Database> {
+    pub fn load_from(path: PathBuf) -> Option<Database> {
+        if path.exists() {
+            match Self::load_from_existing(path) {
+                Ok(db) => Some(db),
+                Err(err) => {
+                    warn!("Failed to open existing database, using new one: {:#}", err);
+                    None
+                }
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn load_from_existing(path: PathBuf) -> Result<Database> {
         let buf = fs::read(&path).context("Failed to open database")?;
         let data = serde_json::from_slice(&buf).context("Failed to read database")?;
         Ok(Database { path, data })
