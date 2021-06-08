@@ -1,5 +1,5 @@
 use crate::errors::*;
-use nix::unistd::Pid;
+use ioprio::Pid;
 
 pub fn setup() -> Result<()> {
     if let Err(err) = ionice() {
