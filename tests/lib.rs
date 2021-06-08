@@ -16,7 +16,7 @@ use std::sync::Arc;
 use tempdir::TempDir;
 use walkdir::DirEntry;
 
-const EICAR: &'static str = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
+const EICAR: &str = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
 
 fn init() {
     let _ = env_logger::Builder::from_env(Env::default().default_filter_or("info"))
@@ -48,6 +48,7 @@ fn run_scan(cfg: &ScanConfig, path: &Path) -> Receiver<(PathBuf, String)> {
 }
 
 #[test]
+#[ignore]
 fn test_find_threat() {
     init();
 
@@ -65,6 +66,7 @@ fn test_find_threat() {
 }
 
 #[test]
+#[ignore]
 fn test_find_no_threat() {
     init();
 
@@ -79,6 +81,7 @@ fn test_find_no_threat() {
 }
 
 #[test]
+#[ignore]
 fn test_find_no_threat_multiple_files() {
     init();
 
@@ -95,6 +98,7 @@ fn test_find_no_threat_multiple_files() {
 }
 
 #[test]
+#[ignore]
 fn test_find_threat_in_deep_recursion() {
     init();
 
@@ -118,6 +122,7 @@ fn test_find_threat_in_deep_recursion() {
 }
 
 #[test]
+#[ignore]
 fn test_can_not_find_threat_with_missing_permissions_for_file() {
     init();
 
@@ -134,6 +139,7 @@ fn test_can_not_find_threat_with_missing_permissions_for_file() {
 }
 
 #[test]
+#[ignore]
 fn test_can_not_find_threat_with_missing_permissions_for_dir() {
     init();
 
@@ -150,6 +156,7 @@ fn test_can_not_find_threat_with_missing_permissions_for_dir() {
 }
 
 #[test]
+#[ignore]
 fn test_skips_excluded_files_by_absolute_path() {
     init();
 
@@ -177,6 +184,7 @@ fn test_skips_excluded_files_by_absolute_path() {
 }
 
 #[test]
+#[ignore]
 fn test_skips_excluded_files_by_absolute_directory_path() {
     init();
 

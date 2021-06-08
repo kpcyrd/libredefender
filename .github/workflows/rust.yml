@@ -23,6 +23,24 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
 
+  integration:
+    name: integration
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: sudo apt-get install libclamav-dev clamav-freshclam
+    - name: Disable apparmor
+      run: sudo apparmor_parser -R /etc/apparmor.d/usr.bin.freshclam
+    - name: Fetch database
+      run: freshclam -F --datadir=$PWD/tmp -l $PWD/tmp/freshclam.log
+    - name: Run tests
+      run: CLAMAV_PATH=$PWD/tmp cargo test -- --nocapture --ignored
+
   clippy:
     name: clippy
     runs-on: ubuntu-latest
