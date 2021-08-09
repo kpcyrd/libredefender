@@ -132,7 +132,7 @@ fn main() -> Result<()> {
 
                     if should_delete {
                         info!("Deleting {:?} at {:?}", names, path);
-                        if let Err(err) = utils::ensure_deleted(&path) {
+                        if let Err(err) = utils::ensure_deleted(path) {
                             error!("Failed to delete {:?}: {:#}", path, err);
                         } else {
                             deleted.push(path.clone());
