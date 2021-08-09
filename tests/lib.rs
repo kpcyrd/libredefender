@@ -13,7 +13,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
-use tempdir::TempDir;
 use walkdir::DirEntry;
 
 const EICAR: &str = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
@@ -52,7 +51,7 @@ fn run_scan(cfg: &ScanConfig, path: &Path) -> Receiver<(PathBuf, String)> {
 fn test_find_threat() {
     init();
 
-    let tmp_dir = TempDir::new("libredefender").unwrap();
+    let tmp_dir = tempfile::tempdir().unwrap();
 
     let eicar_file_path = tmp_dir.path().join("eicar.txt");
     fs::write(eicar_file_path, EICAR).unwrap();
@@ -70,7 +69,7 @@ fn test_find_threat() {
 fn test_find_no_threat() {
     init();
 
-    let tmp_dir = TempDir::new("libredefender").unwrap();
+    let tmp_dir = tempfile::tempdir().unwrap();
 
     let eicar_file_path = tmp_dir.path().join("eicar.txt");
     fs::write(eicar_file_path, "heeeello i am no virus, i swear!").unwrap();
@@ -85,7 +84,7 @@ fn test_find_no_threat() {
 fn test_find_no_threat_multiple_files() {
     init();
 
-    let tmp_dir = TempDir::new("libredefender").unwrap();
+    let tmp_dir = tempfile::tempdir().unwrap();
 
     for i in 1..127 {
         let eicar_file_path = tmp_dir.path().join(format!("no_eicar_{}.txt", i));
@@ -102,7 +101,7 @@ fn test_find_no_threat_multiple_files() {
 fn test_find_threat_in_deep_recursion() {
     init();
 
-    let tmp_dir = TempDir::new("libredefender").unwrap();
+    let tmp_dir = tempfile::tempdir().unwrap();
     let mut accu_dir = tmp_dir.path().to_owned();
 
     for _i in 1..255 {
@@ -126,7 +125,7 @@ fn test_find_threat_in_deep_recursion() {
 fn test_can_not_find_threat_with_missing_permissions_for_file() {
     init();
 
-    let tmp_dir = TempDir::new("libredefender").unwrap();
+    let tmp_dir = tempfile::tempdir().unwrap();
 
     let eicar_file_path = tmp_dir.path().join("eicar.txt");
     fs::write(&eicar_file_path, EICAR).unwrap();
@@ -143,7 +142,7 @@ fn test_can_not_find_threat_with_missing_permissions_for_file() {
 fn test_can_not_find_threat_with_missing_permissions_for_dir() {
     init();
 
-    let tmp_dir = TempDir::new("libredefender").unwrap();
+    let tmp_dir = tempfile::tempdir().unwrap();
 
     let eicar_file_path = tmp_dir.path().join("eicar.txt");
     fs::write(&eicar_file_path, EICAR).unwrap();
@@ -160,7 +159,7 @@ fn test_can_not_find_threat_with_missing_permissions_for_dir() {
 fn test_skips_excluded_files_by_absolute_path() {
     init();
 
-    let tmp_dir = TempDir::new("libredefender").unwrap();
+    let tmp_dir = tempfile::tempdir().unwrap();
 
     let eicar_file_path = tmp_dir.path().join("eicar.txt");
     fs::write(eicar_file_path, EICAR).unwrap();
@@ -188,7 +187,7 @@ fn test_skips_excluded_files_by_absolute_path() {
 fn test_skips_excluded_files_by_absolute_directory_path() {
     init();
 
-    let tmp_dir = TempDir::new("libredefender").unwrap();
+    let tmp_dir = tempfile::tempdir().unwrap();
 
     let skip_me_dir = tmp_dir.path().join("skip_me");
     fs::create_dir(&skip_me_dir).unwrap();
