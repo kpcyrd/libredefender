@@ -7,9 +7,10 @@ use chrono::{DateTime, Utc};
 use clamav_rs::engine::{Engine, ScanResult};
 use clamav_rs::scan_settings::ScanSettings;
 use crossbeam_channel::Sender;
-use std::fs::File;
+use std::fs::{File, FileType};
 use std::io::Read;
 use std::mem;
+use std::os::unix::fs::FileTypeExt;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -74,6 +75,24 @@ pub fn matches(config: &ScanConfig, e: &DirEntry) -> bool {
     true
 }
 
+pub fn should_be_skipped(ft: &FileType) -> Option<&'static str> {
+    if ft.is_dir() {
+        Some("Traversing directory")
+    } else if ft.is_symlink() {
+        Some("Skipping symlink")
+    } else if ft.is_socket() {
+        Some("Skipping unix socket")
+    } else if ft.is_fifo() {
+        Some("Skipping fifo")
+    } else if ft.is_block_device() {
+        Some("Skipping block device")
+    } else if ft.is_char_device() {
+        Some("Skipping char device")
+    } else {
+        None
+    }
+}
+
 pub fn ingest_directory(cfg: &ScanConfig, tx: &Sender<DirEntry>, path: &Path) {
     let walker = WalkDir::new(path).into_iter();
     for entry in walker.filter_entry(|e| matches(cfg, e)) {
@@ -88,15 +107,10 @@ pub fn ingest_directory(cfg: &ScanConfig, tx: &Sender<DirEntry>, path: &Path) {
         let path = entry.path();
         let ft = entry.file_type();
 
-        trace!("Walkdir found {}", path.display());
+        trace!("Next item from walkdir iterator: {}", path.display());
 
-        if ft.is_dir() {
-            debug!("Traversing directory: {}", path.display());
-            continue;
-        }
-
-        if ft.is_symlink() {
-            debug!("Skipping symlink: {}", path.display());
+        if let Some(reason) = should_be_skipped(&ft) {
+            debug!("{}: {}", reason, path.display());
             continue;
         }
 
