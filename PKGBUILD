@@ -8,7 +8,7 @@ url='https://github.com/kpcyrd/libredefender'
 arch=('x86_64')
 license=('GPL3')
 depends=('clamav')
-makedepends=('cargo')
+makedepends=('cargo' 'clang')
 #backup=('etc/libredefender.conf')
 
 build() {
@@ -31,6 +31,7 @@ package() {
   "${pkgdir}/usr/bin/libredefender" completions fish > "${pkgdir}/usr/share/fish/vendor_completions.d/libredefender.fish"
 
   install -Dm 644 contrib/libredefender.desktop -t "${pkgdir}/etc/xdg/autostart"
+  install -Dm 644 contrib/icon.svg "${pkgdir}/usr/share/icons/hicolor/scalable/apps/${pkgname}.svg"
 }
 
 # vim: ts=2 sw=2 et:

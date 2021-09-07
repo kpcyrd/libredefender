@@ -29,6 +29,8 @@ pub enum SubCommand {
     Scheduler(Scheduler),
     /// List threats that have been detected
     Infections(Infections),
+    /// Send a test notification
+    TestNotify,
     /// Generate shell completions
     Completions(Completions),
 }

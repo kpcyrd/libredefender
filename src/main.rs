@@ -12,11 +12,13 @@ use libredefender::args::{Args, SubCommand};
 use libredefender::db::Database;
 use libredefender::errors::*;
 use libredefender::nice;
+use libredefender::notify;
 use libredefender::scan;
 use libredefender::schedule;
 use libredefender::utils;
 use num_format::{Locale, ToFormattedString};
 use std::borrow::Cow;
+use std::path::Path;
 use structopt::StructOpt;
 
 fn format_num(num: usize, zero_is_bad: bool) -> ColoredString {
@@ -156,6 +158,7 @@ fn main() -> Result<()> {
                 db.store().context("Failed to write database")?;
             }
         }
+        Some(SubCommand::TestNotify) => notify::show(Path::new("/just/a/test"), "just/testing")?,
         Some(SubCommand::Completions(args)) => args.gen_completions()?,
     }
 

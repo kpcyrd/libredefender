@@ -12,6 +12,7 @@ pub mod config;
 pub mod db;
 pub mod errors;
 pub mod nice;
+pub mod notify;
 pub mod patterns;
 pub mod scan;
 pub mod schedule;
