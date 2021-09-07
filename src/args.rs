@@ -33,10 +33,13 @@ pub enum SubCommand {
     Completions(Completions),
 }
 
-#[derive(StructOpt)]
+#[derive(StructOpt, Default)]
 pub struct Scan {
     /// Paths that should be scanned
     pub paths: Vec<PathBuf>,
+    /// Configure the number of scanning threads, defaults to number of cpu cores
+    #[structopt(short = "j", long)]
+    pub concurrency: Option<usize>,
 }
 
 #[derive(StructOpt)]

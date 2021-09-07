@@ -1,3 +1,4 @@
+use crate::args;
 use crate::errors::*;
 use crate::patterns::Pattern;
 use crate::schedule::PreferedHours;
@@ -19,6 +20,7 @@ pub struct Config {
 pub struct ScanConfig {
     #[serde(default)]
     pub paths: Vec<PathBuf>,
+    pub concurrency: Option<usize>,
     #[serde(default)]
     pub excludes: Vec<Pattern>,
     #[serde(default)]
@@ -45,7 +47,7 @@ fn path_to_string(path: &Path) -> Result<String> {
     Ok(s.to_string())
 }
 
-pub fn load() -> Result<Config> {
+pub fn load(args: Option<&args::Scan>) -> Result<Config> {
     let mut settings = config::Config::default();
 
     settings.set_default("update.path", "/var/lib/clamav")?;
@@ -56,6 +58,12 @@ pub fn load() -> Result<Config> {
     settings
         .merge(config::File::new(&path, config::FileFormat::Toml).required(false))
         .with_context(|| anyhow!("Failed to load config file {:?}", path))?;
+
+    if let Some(args) = args {
+        if let Some(concurrency) = args.concurrency {
+            settings.set("scan.concurrency", concurrency as i64)?;
+        }
+    }
 
     let config = settings
         .try_into::<Config>()
