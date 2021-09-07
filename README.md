@@ -17,6 +17,8 @@ The process is trying to change both io and processor priority to idle.
 
 ## Example config
 
+The configuration file is loaded from **~/.config/libredefender.toml**:
+
 ```toml
 [scan]
 excludes = [
