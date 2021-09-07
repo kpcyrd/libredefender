@@ -202,7 +202,7 @@ impl Scanner {
 }
 
 pub fn run(args: args::Scan) -> Result<()> {
-    let config = config::load().context("Failed to load config")?;
+    let config = config::load(Some(&args)).context("Failed to load config")?;
 
     let mut db = Database::load().context("Failed to load database")?;
 
@@ -227,7 +227,8 @@ pub fn run(args: args::Scan) -> Result<()> {
     let scanner = Scanner::new(&config.update.path)?;
     let scanner = Arc::new(scanner);
 
-    let cpus = num_cpus::get();
+    let cpus = config.scan.concurrency.unwrap_or_else(num_cpus::get);
+
     info!("Spawning {} scanner(s)...", cpus);
     for _ in 0..cpus {
         let results_tx = results_tx.clone();

@@ -25,11 +25,14 @@ excludes = [
     # rust build folders
     "/home/user/repos/**/target",
 ]
+## by default libredefender spawns one thread per cpu core
+## set to 1 to use a single thread
+#concurrency = 1
 skip_hidden = true
 skip_larger_than = "30MiB"
 
 [update]
-# use data fetched by clamav-freshclam.service (default)
+## use data fetched by clamav-freshclam.service (default)
 path = "/var/lib/clamav"
 
 [schedule]

@@ -129,7 +129,7 @@ pub fn run(_args: &args::Scheduler) -> Result<()> {
     loop {
         let now = Local::now();
 
-        let config = config::load().context("Failed to load config")?;
+        let config = config::load(None).context("Failed to load config")?;
 
         let db = Database::load().context("Failed to load database")?;
         let data = db.data();
@@ -162,7 +162,7 @@ pub fn run(_args: &args::Scheduler) -> Result<()> {
 
         robust_sleep(sleep)?;
 
-        if let Err(err) = scan::run(args::Scan { paths: vec![] }) {
+        if let Err(err) = scan::run(args::Scan::default()) {
             error!("Error: {:#}", err);
         }
     }
