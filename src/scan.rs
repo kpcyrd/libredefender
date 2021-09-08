@@ -2,12 +2,13 @@ use crate::args;
 use crate::config::{self, ScanConfig};
 use crate::db::Database;
 use crate::errors::*;
+use crate::notify;
 use chrono::TimeZone;
 use chrono::{DateTime, Utc};
 use clamav_rs::engine::{Engine, ScanResult};
 use clamav_rs::scan_settings::ScanSettings;
 use crossbeam_channel::Sender;
-use std::fs::{File, FileType};
+use std::fs::{self, File, FileType};
 use std::io::Read;
 use std::mem;
 use std::os::unix::fs::FileTypeExt;
@@ -256,6 +257,17 @@ pub fn run(args: args::Scan) -> Result<()> {
     data.signature_count = scanner.signature_count();
     data.signatures_age = Some(scanner.signatures_age());
     for (path, name) in results_rx {
+        let path = match fs::canonicalize(&path) {
+            Ok(path) => path,
+            Err(err) => {
+                error!("Failed to canonicalize path {:?}: {:#}", path, err);
+                path
+            }
+        };
+
+        if let Err(err) = notify::show(&path, &name) {
+            warn!("Failed to display notification: {:#}", err);
+        }
         data.threats.entry(path).or_default().push(name);
     }
     info!("Scan finished, found {} threat(s)!", data.threats.len());
