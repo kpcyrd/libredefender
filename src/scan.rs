@@ -8,6 +8,7 @@ use chrono::{DateTime, Utc};
 use clamav_rs::engine::{Engine, ScanResult};
 use clamav_rs::scan_settings::ScanSettings;
 use crossbeam_channel::Sender;
+use std::ffi::OsStr;
 use std::fs::{self, File, FileType};
 use std::io::Read;
 use std::mem;
@@ -30,18 +31,17 @@ fn path_to_string(path: &Path) -> Result<String> {
     Ok(s.to_string())
 }
 
-fn is_hidden(entry: &DirEntry) -> bool {
+fn is_hidden(entry: &OsStr) -> bool {
     entry
-        .file_name()
         .to_str()
-        .map_or(false, |s| s.starts_with('.'))
+        .map_or(false, |s| s != "." && s != ".." && s.starts_with('.'))
 }
 
 #[must_use]
 pub fn matches(config: &ScanConfig, e: &DirEntry) -> bool {
     let path = e.path();
 
-    if config.skip_hidden && is_hidden(e) {
+    if config.skip_hidden && is_hidden(e.file_name()) {
         debug!("Skipping path {}: name starts with dot", path.display());
         return false;
     }
@@ -310,6 +310,36 @@ pub fn parse_database_age(mut buf: &[u8]) -> Result<DateTime<Utc>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn is_hidden_regular_file() {
+        let hidden = is_hidden(OsStr::new("x"));
+        assert!(!hidden);
+    }
+
+    #[test]
+    fn is_hidden_hidden_file() {
+        let hidden = is_hidden(OsStr::new(".x"));
+        assert!(hidden);
+    }
+
+    #[test]
+    fn is_hidden_hidden_current_directory() {
+        let hidden = is_hidden(OsStr::new("."));
+        assert!(!hidden);
+    }
+
+    #[test]
+    fn is_hidden_hidden_parent_directory() {
+        let hidden = is_hidden(OsStr::new(".."));
+        assert!(!hidden);
+    }
+
+    #[test]
+    fn is_hidden_three_dots() {
+        let hidden = is_hidden(OsStr::new("..."));
+        assert!(hidden);
+    }
 
     #[test]
     fn test_datetime_from_header() {
