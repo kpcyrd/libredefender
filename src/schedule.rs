@@ -129,9 +129,40 @@ pub fn run(_args: &args::Scheduler) -> Result<()> {
     loop {
         let now = Local::now();
 
-        let config = config::load(None).context("Failed to load config")?;
+        let config = match config::load(None) {
+            Ok(config) => config,
+            Err(err) => {
+                warn!("Failed to load config, skipping this scan: {:#}", err);
+                robust_sleep(interval)?;
+                continue;
+            }
+        };
 
-        let db = Database::load().context("Failed to load database")?;
+        match config.schedule.automatic_scans.as_deref() {
+            Some("off") | None => {
+                info!("Automatic scanning is disabled, skipping this scan");
+                robust_sleep(interval)?;
+                continue;
+            }
+            Some("daily") => (),
+            value => {
+                error!(
+                    "Invalid value for automatic_scans, skipping this scan: {:?}",
+                    value
+                );
+                robust_sleep(interval)?;
+                continue;
+            }
+        }
+
+        let db = match Database::load() {
+            Ok(db) => db,
+            Err(err) => {
+                error!("Failed to load database: {:#}", err);
+                robust_sleep(interval)?;
+                continue;
+            }
+        };
         let data = db.data();
 
         let sleep = data
