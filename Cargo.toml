@@ -20,7 +20,7 @@ clamav-rs = "0.5.3"
 colored = "2.0.0"
 config = { version = "0.11", default-features = false, features = ["toml"] }
 crossbeam-channel = "0.5.1"
-dirs = "3.0.2"
+dirs = "4"
 env_logger = "0.9"
 glob = "0.3.0"
 human-size = "0.4.1"
@@ -35,7 +35,7 @@ rand = "0.8.3"
 serde = { version = "1.0.125", features = ["derive"] }
 serde_json = "1.0.64"
 structopt = "0.3.21"
-v_htmlescape = "0.13.1"
+v_htmlescape = "0.14"
 walkdir = "2.3.2"
 
 [dev-dependencies]
