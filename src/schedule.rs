@@ -139,12 +139,12 @@ pub fn run(_args: &args::Scheduler) -> Result<()> {
         };
 
         match config.schedule.automatic_scans.as_deref() {
-            Some("off") | None => {
+            Some("off") => {
                 info!("Automatic scanning is disabled, skipping this scan");
                 robust_sleep(interval)?;
                 continue;
             }
-            Some("daily") => (),
+            Some("daily") | None => (),
             value => {
                 error!(
                     "Invalid value for automatic_scans, skipping this scan: {:?}",
