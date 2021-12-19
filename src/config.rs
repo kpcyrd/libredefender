@@ -35,9 +35,7 @@ pub struct UpdateConfig {
 
 #[derive(Debug, Default, Deserialize)]
 pub struct ScheduleConfig {
-    // TODO we assume daily for now
-    // pub every: Option<String>,
-    // pub tolerance: Option<String>,
+    pub automatic_scans: Option<String>,
     pub preferred_hours: Option<PreferedHours>,
 }
 
