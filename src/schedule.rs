@@ -1,5 +1,3 @@
-extern crate battery;
-
 use crate::args;
 use crate::config;
 use crate::db::Database;
