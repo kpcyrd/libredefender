@@ -37,6 +37,8 @@ path = "/var/lib/clamav"
 
 [schedule]
 preferred_hours = "09:00:00-19:00:00"
+## Do not run scans when on battery
+skip_on_battery = true
 ```
 
 ## Installation

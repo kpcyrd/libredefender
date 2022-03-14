@@ -37,7 +37,8 @@ pub struct UpdateConfig {
 pub struct ScheduleConfig {
     pub automatic_scans: Option<String>,
     pub preferred_hours: Option<PreferedHours>,
-    pub scan_on_battery: Option<bool>,
+    #[serde(default)]
+    pub skip_on_battery: bool,
 }
 
 // config::File::new expects &str instead of &Path
