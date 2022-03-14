@@ -14,7 +14,7 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.40"
 atoi = "0.4.0"
-battery = "^0.7"
+battery = "0.7"
 chrono = { version = "0.4.19", features = ["serde"] }
 chrono-humanize = "0.2.1"
 clamav-rs = "0.5.3"
