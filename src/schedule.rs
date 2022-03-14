@@ -1,3 +1,5 @@
+extern crate battery;
+
 use crate::args;
 use crate::config;
 use crate::db::Database;
@@ -137,6 +139,24 @@ pub fn run(_args: &args::Scheduler) -> Result<()> {
                 continue;
             }
         };
+
+        match config.schedule.scan_on_battery {
+            Some(true) | None => (),
+            Some(false) => {
+                let battery_manager = battery::Manager::new()?;
+                // Check if any batteries are in state Discharging
+                let battery_discharging =
+                    battery_manager.batteries()?.any(|battery| match battery {
+                        Ok(battery) => battery.state() == battery::State::Discharging,
+                        Err(_error) => false,
+                    });
+                if battery_discharging {
+                    info!("Battery is discharging, skipping this scan");
+                    robust_sleep(interval)?;
+                    continue;
+                }
+            }
+        }
 
         match config.schedule.automatic_scans.as_deref() {
             Some("off") => {
