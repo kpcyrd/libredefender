@@ -13,13 +13,13 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.40"
-atoi = "0.4.0"
+atoi = "1"
 battery = "0.7"
 chrono = { version = "0.4.19", features = ["serde"] }
 chrono-humanize = "0.2.1"
 clamav-rs = "0.5.3"
 colored = "2.0.0"
-config = { version = "0.11", default-features = false, features = ["toml"] }
+config = { version = "0.13", default-features = false, features = ["toml"] }
 crossbeam-channel = "0.5.1"
 dirs = "4"
 env_logger = "0.9"
@@ -36,7 +36,7 @@ rand = "0.8.3"
 serde = { version = "1.0.125", features = ["derive"] }
 serde_json = "1.0.64"
 structopt = "0.3.21"
-v_htmlescape = "0.14"
+v_htmlescape = "0.15"
 walkdir = "2.3.2"
 
 [dev-dependencies]

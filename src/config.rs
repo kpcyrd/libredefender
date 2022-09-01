@@ -48,25 +48,24 @@ fn path_to_string(path: &Path) -> Result<String> {
 }
 
 pub fn load(args: Option<&args::Scan>) -> Result<Config> {
-    let mut settings = config::Config::default();
-
-    settings.set_default("update.path", "/var/lib/clamav")?;
+    let mut settings = config::Config::builder()
+        .set_default("update.path", "/var/lib/clamav")?;
 
     let config_dir = dirs::config_dir().context("Failed to find config dir")?;
     let path = path_to_string(&config_dir.join("libredefender.toml"))?;
-
-    settings
-        .merge(config::File::new(&path, config::FileFormat::Toml).required(false))
-        .with_context(|| anyhow!("Failed to load config file {:?}", path))?;
+    settings = settings.add_source(config::File::new(&path, config::FileFormat::Toml).required(false));
 
     if let Some(args) = args {
         if let Some(concurrency) = args.concurrency {
-            settings.set("scan.concurrency", concurrency as i64)?;
+            settings = settings.set_override("scan.concurrency", concurrency as i64)?;
         }
     }
 
+    let settings = settings.build()
+        .context("Failed to load configuration")?;
+
     let config = settings
-        .try_into::<Config>()
+        .try_deserialize::<Config>()
         .context("Failed to parse config")?;
 
     Ok(config)
