@@ -150,6 +150,12 @@ pub fn run(_args: &args::Scheduler) -> Result<()> {
 
         if config.schedule.skip_on_battery {
             let battery_manager = battery::Manager::new()?;
+            // Check if there even are batteries in the system. If we don't
+            // find any batteries we assume that the system has no batteries
+            // and we start a scan.
+            if battery_manager.batteries()?.count() < 1 {
+                error!("No batteries present in system");
+            }
             // Check if any batteries are in state Discharging
             let battery_discharging = battery_manager.batteries()?.any(|battery| match battery {
                 Ok(battery) => battery.state() == battery::State::Discharging,
