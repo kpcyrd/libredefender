@@ -155,6 +155,9 @@ pub fn run(_args: &args::Scheduler) -> Result<()> {
                 Ok(battery) => battery.state() == battery::State::Discharging,
                 Err(_error) => false,
             });
+            for battery in battery_manager.batteries()? {
+                debug!("Battery state: {:?}", battery?.state())
+            }
             if battery_discharging {
                 info!("Battery is discharging, skipping this scan");
                 robust_sleep(interval)?;
