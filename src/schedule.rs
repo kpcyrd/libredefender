@@ -10,7 +10,7 @@ use std::cmp;
 use std::str::FromStr;
 use std::thread;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct PreferedHours {
     start: NaiveTime,
     end: NaiveTime,
