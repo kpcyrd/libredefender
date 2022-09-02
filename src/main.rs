@@ -9,6 +9,7 @@ use chrono_humanize::HumanTime;
 use colored::{Color, ColoredString, Colorize};
 use env_logger::Env;
 use libredefender::args::{Args, SubCommand};
+use libredefender::config;
 use libredefender::db::Database;
 use libredefender::errors::*;
 use libredefender::nice;
@@ -159,6 +160,12 @@ fn main() -> Result<()> {
             }
         }
         Some(SubCommand::TestNotify) => notify::show(Path::new("/just/a/test"), "just/testing")?,
+        Some(SubCommand::DumpConfig) => {
+            let config = config::load(None).context("Failed to load config")?;
+
+            serde_json::to_writer_pretty(std::io::stdout(), &config)?;
+            println!();
+        }
         Some(SubCommand::Completions(args)) => args.gen_completions()?,
     }
 

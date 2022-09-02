@@ -1,5 +1,5 @@
 use crate::errors::*;
-use serde::{de, Deserialize, Deserializer};
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::path::Path;
 use std::str::FromStr;
@@ -31,6 +31,16 @@ impl FromStr for Pattern {
     }
 }
 
+impl Serialize for Pattern {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let pattern = self.0.to_string();
+        serializer.serialize_str(&pattern)
+    }
+}
+
 impl<'de> Deserialize<'de> for Pattern {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -38,5 +48,18 @@ impl<'de> Deserialize<'de> for Pattern {
     {
         let s = String::deserialize(deserializer)?;
         FromStr::from_str(&s).map_err(de::Error::custom)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_serialize_glob() {
+        let txt = "foo/**/{a,b}*";
+        let p = Pattern::from_str(txt).unwrap();
+        let json = serde_json::to_string(&p).unwrap();
+        assert_eq!(json, "\"foo/**/{a,b}*\"");
     }
 }

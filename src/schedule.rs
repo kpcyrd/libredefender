@@ -5,12 +5,12 @@ use crate::errors::*;
 use crate::scan;
 use chrono::{DateTime, Datelike, Local, NaiveTime, TimeZone, Timelike, Utc};
 use rand::Rng;
-use serde::{de, Deserialize, Deserializer};
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use std::cmp;
 use std::str::FromStr;
 use std::thread;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct PreferedHours {
     start: NaiveTime,
     end: NaiveTime,
@@ -76,6 +76,16 @@ impl FromStr for PreferedHours {
         let end = parts[1].parse().context("Not a number")?;
 
         Ok(PreferedHours { start, end })
+    }
+}
+
+impl Serialize for PreferedHours {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let hours = format!("{}-{}", self.start, self.end);
+        serializer.serialize_str(&hours)
     }
 }
 
@@ -322,5 +332,13 @@ mod tests {
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(19 * 3600 + 23 * 60));
+    }
+
+    #[test]
+    fn test_serialize_preferred_hours() {
+        let txt = "13:37:00-23:00:00";
+        let p = PreferedHours::from_str(txt).unwrap();
+        let json = serde_json::to_string(&p).unwrap();
+        assert_eq!(json, "\"13:37:00-23:00:00\"");
     }
 }

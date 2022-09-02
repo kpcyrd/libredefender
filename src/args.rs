@@ -31,6 +31,8 @@ pub enum SubCommand {
     Infections(Infections),
     /// Send a test notification
     TestNotify,
+    /// Load the configuration and print it as json for debugging
+    DumpConfig,
     /// Generate shell completions
     Completions(Completions),
 }
