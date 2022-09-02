@@ -3,11 +3,11 @@ use crate::errors::*;
 use crate::patterns::Pattern;
 use crate::schedule::PreferedHours;
 use human_size::{Byte, Size, SpecificSize};
-use serde::{de, Deserialize, Deserializer};
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
     pub scan: ScanConfig,
@@ -16,7 +16,7 @@ pub struct Config {
     pub schedule: ScheduleConfig,
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ScanConfig {
     #[serde(default)]
     pub paths: Vec<PathBuf>,
@@ -28,12 +28,12 @@ pub struct ScanConfig {
     pub skip_larger_than: Option<HumanSize>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateConfig {
     pub path: PathBuf,
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct ScheduleConfig {
     pub automatic_scans: Option<String>,
     pub preferred_hours: Option<PreferedHours>,
@@ -48,12 +48,12 @@ fn path_to_string(path: &Path) -> Result<String> {
 }
 
 pub fn load(args: Option<&args::Scan>) -> Result<Config> {
-    let mut settings = config::Config::builder()
-        .set_default("update.path", "/var/lib/clamav")?;
+    let mut settings = config::Config::builder().set_default("update.path", "/var/lib/clamav")?;
 
     let config_dir = dirs::config_dir().context("Failed to find config dir")?;
     let path = path_to_string(&config_dir.join("libredefender.toml"))?;
-    settings = settings.add_source(config::File::new(&path, config::FileFormat::Toml).required(false));
+    settings =
+        settings.add_source(config::File::new(&path, config::FileFormat::Toml).required(false));
 
     if let Some(args) = args {
         if let Some(concurrency) = args.concurrency {
@@ -61,8 +61,7 @@ pub fn load(args: Option<&args::Scan>) -> Result<Config> {
         }
     }
 
-    let settings = settings.build()
-        .context("Failed to load configuration")?;
+    let settings = settings.build().context("Failed to load configuration")?;
 
     let config = settings
         .try_deserialize::<Config>()
@@ -87,6 +86,16 @@ impl FromStr for HumanSize {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let size: Size = s.parse().context("Failed to parse human size")?;
         Ok(HumanSize(size))
+    }
+}
+
+impl Serialize for HumanSize {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let bytes = self.0.to_bytes();
+        serializer.serialize_str(&bytes.to_string())
     }
 }
 
