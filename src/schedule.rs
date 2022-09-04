@@ -150,24 +150,37 @@ pub fn run(_args: &args::Scheduler) -> Result<()> {
 
         if config.schedule.skip_on_battery {
             let battery_manager = battery::Manager::new()?;
+
+            let batteries = battery_manager
+                .batteries()
+                .context("Failed to detect batteries")?
+                .collect::<battery::Result<Vec<_>>>()
+                .context("Failed to read battery status")?;
+
             // Check if there even are batteries in the system. If we don't
             // find any batteries we assume that the system has no batteries
             // and we start a scan.
-            if battery_manager.batteries()?.count() < 1 {
-                error!("No batteries present in system");
-            }
-            // Check if any batteries are in state Discharging
-            let battery_discharging = battery_manager.batteries()?.any(|battery| match battery {
-                Ok(battery) => battery.state() == battery::State::Discharging,
-                Err(_error) => false,
-            });
-            for battery in battery_manager.batteries()? {
-                debug!("Battery state: {:?}", battery?.state())
-            }
-            if battery_discharging {
-                info!("Battery is discharging, skipping this scan");
-                robust_sleep(interval)?;
-                continue;
+            if batteries.is_empty() {
+                debug!("No batteries present in system");
+            } else {
+                // List all batteries and check if any are in state Discharging
+                let battery_discharging = batteries.iter().fold(false, |discharging, battery| {
+                    let state = battery.state();
+                    debug!(
+                        "Found battery: {} {}, {:?}% ({:?})",
+                        battery.vendor().unwrap_or("-"),
+                        battery.model().unwrap_or("-"),
+                        battery.state_of_charge() * 100.0,
+                        state,
+                    );
+                    discharging || state == battery::State::Discharging
+                });
+
+                if battery_discharging {
+                    info!("Battery is discharging, skipping this scan");
+                    robust_sleep(interval)?;
+                    continue;
+                }
             }
         }
 
