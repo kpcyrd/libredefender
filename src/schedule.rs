@@ -6,6 +6,7 @@ use crate::scan;
 use chrono::{DateTime, Datelike, Local, NaiveTime, TimeZone, Timelike, Utc};
 use rand::Rng;
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+use starship_battery as battery;
 use std::cmp;
 use std::str::FromStr;
 use std::thread;
