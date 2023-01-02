@@ -18,6 +18,8 @@ battery = "0.7"
 chrono = { version = "0.4.19", features = ["serde"] }
 chrono-humanize = "0.2.1"
 clamav-rs = "0.5.3"
+clap = { version = "4.0.32", features = ["derive"] }
+clap_complete = "4.0.7"
 colored = "2.0.0"
 config = { version = "0.13", default-features = false, features = ["toml"] }
 crossbeam-channel = "0.5.1"
@@ -35,7 +37,6 @@ num_cpus = "1.13.0"
 rand = "0.8.3"
 serde = { version = "1.0.125", features = ["derive"] }
 serde_json = "1.0.64"
-structopt = "0.3.21"
 v_htmlescape = "0.15"
 walkdir = "2.3.2"
 

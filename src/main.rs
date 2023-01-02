@@ -6,6 +6,7 @@
 
 use chrono::{DateTime, Local, Utc};
 use chrono_humanize::HumanTime;
+use clap::Parser;
 use colored::{Color, ColoredString, Colorize};
 use env_logger::Env;
 use libredefender::args::{Args, SubCommand};
@@ -20,7 +21,6 @@ use libredefender::utils;
 use num_format::{Locale, ToFormattedString};
 use std::borrow::Cow;
 use std::path::Path;
-use structopt::StructOpt;
 
 fn format_num(num: usize, zero_is_bad: bool) -> ColoredString {
     let color = if zero_is_bad ^ (num != 0) {
@@ -53,7 +53,7 @@ fn print_line(line: &str, good: bool) {
 }
 
 fn main() -> Result<()> {
-    let args = Args::from_args();
+    let args = Args::parse();
 
     let logging = match (args.quiet, args.verbose) {
         (true, _) => "warn",

@@ -1,27 +1,26 @@
 use crate::errors::*;
+use clap::{ArgAction, CommandFactory, Parser, Subcommand};
+use clap_complete::Shell;
 use std::io::stdout;
 use std::path::PathBuf;
-use structopt::clap::{AppSettings, Shell};
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(global_settings = &[AppSettings::ColoredHelp])]
+#[derive(Parser)]
 pub struct Args {
     /// Only show warnings
-    #[structopt(short, long, global = true)]
+    #[clap(short, long, global = true)]
     pub quiet: bool,
     /// More verbose logs
-    #[structopt(short, long, global = true, parse(from_occurrences))]
+    #[clap(short, long, global = true, action = ArgAction::Count)]
     pub verbose: u8,
-    #[structopt(short = "C", long, global = true)]
+    #[clap(short = 'C', long, global = true)]
     pub colors: bool,
-    #[structopt(short = "D", long, global = true)]
+    #[clap(short = 'D', long, global = true)]
     pub data: Option<PathBuf>,
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub subcommand: Option<SubCommand>,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub enum SubCommand {
     /// Scan directories for signature matches
     Scan(Scan),
@@ -37,37 +36,41 @@ pub enum SubCommand {
     Completions(Completions),
 }
 
-#[derive(StructOpt, Default)]
+#[derive(Parser, Default)]
 pub struct Scan {
     /// Paths that should be scanned
     pub paths: Vec<PathBuf>,
     /// Configure the number of scanning threads, defaults to number of cpu cores
-    #[structopt(short = "j", long)]
+    #[clap(short = 'j', long)]
     pub concurrency: Option<usize>,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Scheduler {}
 
-#[derive(StructOpt)]
+#[derive(Parser)]
 pub struct Infections {
     /// Interactively offer deletion for every file
-    #[structopt(short, long, group = "action")]
+    #[clap(short, long, group = "action")]
     pub delete: bool,
     /// Delete all files without further confirmation (DANGER!)
-    #[structopt(long, group = "action")]
+    #[clap(long, group = "action")]
     pub delete_all: bool,
 }
 
-#[derive(Debug, Clone, StructOpt)]
+#[derive(Debug, Clone, Parser)]
 pub struct Completions {
-    #[structopt(possible_values=&Shell::variants())]
     pub shell: Shell,
 }
 
 impl Completions {
     pub fn gen_completions(&self) -> Result<()> {
-        Args::clap().gen_completions_to("libredefender", self.shell, &mut stdout());
+        clap_complete::generate(
+            self.shell,
+            &mut Args::command(),
+            "libredefender",
+            &mut stdout(),
+        );
         Ok(())
     }
 }
