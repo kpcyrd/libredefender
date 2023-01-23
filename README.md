@@ -45,7 +45,7 @@ skip_on_battery = true
 
 <a href="https://repology.org/project/libredefender/versions"><img align="right" src="https://repology.org/badge/vertical-allrepos/libredefender.svg" alt="Packaging status"></a>
 
-    pacman -S libredefender
+    pacman -Sy libredefender
 
 ## Icons
 
