@@ -145,7 +145,7 @@ fn test_can_not_find_threat_with_missing_permissions_for_dir() {
     let tmp_dir = tempfile::tempdir().unwrap();
 
     let eicar_file_path = tmp_dir.path().join("eicar.txt");
-    fs::write(&eicar_file_path, EICAR).unwrap();
+    fs::write(eicar_file_path, EICAR).unwrap();
 
     fs::set_permissions(tmp_dir.path(), fs::Permissions::from_mode(0o0)).unwrap();
 
@@ -193,7 +193,7 @@ fn test_skips_excluded_files_by_absolute_directory_path() {
     fs::create_dir(&skip_me_dir).unwrap();
 
     let skip_file_path = skip_me_dir.join("eicar.txt");
-    fs::write(&skip_file_path, EICAR).unwrap();
+    fs::write(skip_file_path, EICAR).unwrap();
 
     let scan_config = ScanConfig {
         skip_hidden: false,

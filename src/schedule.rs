@@ -25,19 +25,32 @@ impl PreferedHours {
             chrono::Duration::zero()
         } else if t < self.start {
             // today
-            let next_start = Local.ymd(dt.year(), dt.month(), dt.day()).and_hms(
-                self.start.hour(),
-                self.start.minute(),
-                self.start.second(),
-            );
+            let next_start = Local
+                .with_ymd_and_hms(
+                    dt.year(),
+                    dt.month(),
+                    dt.day(),
+                    self.start.hour(),
+                    self.start.minute(),
+                    self.start.second(),
+                )
+                .earliest()
+                .unwrap();
             next_start - dt
         } else {
             // tomorrow
-            let next_start = Local.ymd(dt.year(), dt.month(), dt.day()).and_hms(
-                self.start.hour(),
-                self.start.minute(),
-                self.start.second(),
-            ) + chrono::Duration::hours(24);
+            let next_start = Local
+                .with_ymd_and_hms(
+                    dt.year(),
+                    dt.month(),
+                    dt.day(),
+                    self.start.hour(),
+                    self.start.minute(),
+                    self.start.second(),
+                )
+                .earliest()
+                .unwrap()
+                + chrono::Duration::hours(24);
             next_start - dt
         }
     }
@@ -46,19 +59,32 @@ impl PreferedHours {
         let t = dt.time();
         if self.end > t {
             // today
-            let next_end = Local.ymd(dt.year(), dt.month(), dt.day()).and_hms(
-                self.end.hour(),
-                self.end.minute(),
-                self.end.second(),
-            );
+            let next_end = Local
+                .with_ymd_and_hms(
+                    dt.year(),
+                    dt.month(),
+                    dt.day(),
+                    self.end.hour(),
+                    self.end.minute(),
+                    self.end.second(),
+                )
+                .earliest()
+                .unwrap();
             next_end - dt
         } else {
             // tomorrow
-            let next_end = Local.ymd(dt.year(), dt.month(), dt.day()).and_hms(
-                self.end.hour(),
-                self.end.minute(),
-                self.end.second(),
-            ) + chrono::Duration::hours(24);
+            let next_end = Local
+                .with_ymd_and_hms(
+                    dt.year(),
+                    dt.month(),
+                    dt.day(),
+                    self.end.hour(),
+                    self.end.minute(),
+                    self.end.second(),
+                )
+                .earliest()
+                .unwrap()
+                + chrono::Duration::hours(24);
             next_end - dt
         }
     }
@@ -257,8 +283,8 @@ mod tests {
         assert_eq!(
             ph,
             PreferedHours {
-                start: NaiveTime::from_hms(19, 0, 0),
-                end: NaiveTime::from_hms(9, 0, 0),
+                start: NaiveTime::from_hms_opt(19, 0, 0).unwrap(),
+                end: NaiveTime::from_hms_opt(9, 0, 0).unwrap(),
             }
         );
     }
@@ -279,7 +305,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_start() {
-        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 13, 37, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(5 * 3600 + 23 * 60));
@@ -287,7 +316,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_end() {
-        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 13, 37, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(19 * 3600 + 23 * 60));
@@ -295,7 +327,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_start_now() {
-        let now = Local.ymd(1970, 1, 1).and_hms(23, 37, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 23, 37, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(0));
@@ -303,7 +338,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_end_now() {
-        let now = Local.ymd(1970, 1, 1).and_hms(23, 37, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 23, 37, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(9 * 3600 + 23 * 60));
@@ -311,7 +349,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_start_now2() {
-        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 13, 37, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(0));
@@ -319,7 +360,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_end_now2() {
-        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 13, 37, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(5 * 3600 + 23 * 60));
@@ -327,7 +371,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_start_later() {
-        let now = Local.ymd(1970, 1, 1).and_hms(9, 0, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 9, 0, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(4 * 3600 + 37 * 60));
@@ -335,7 +382,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_end_later() {
-        let now = Local.ymd(1970, 1, 1).and_hms(9, 0, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 9, 0, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(14 * 3600));
@@ -343,7 +393,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_start_tomorrow() {
-        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 13, 37, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
         let duration = ph.until_next_start(now);
         assert_eq!(duration, chrono::Duration::seconds(14 * 3600 + 23 * 60));
@@ -351,7 +404,10 @@ mod tests {
 
     #[test]
     fn test_until_next_preferred_hour_end_tomorrow() {
-        let now = Local.ymd(1970, 1, 1).and_hms(13, 37, 0);
+        let now = Local
+            .with_ymd_and_hms(1970, 1, 1, 13, 37, 0)
+            .single()
+            .unwrap();
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
         let duration = ph.until_next_end(now);
         assert_eq!(duration, chrono::Duration::seconds(19 * 3600 + 23 * 60));
