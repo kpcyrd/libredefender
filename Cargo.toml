@@ -1,6 +1,6 @@
 [package]
 name = "libredefender"
-version = "0.6.0"
+version = "0.7.0"
 description = "Light-weight antivirus scanner for Linux"
 authors = ["kpcyrd <git@rxv.cc>"]
 license = "GPL-2.0 OR GPL-3.0"
