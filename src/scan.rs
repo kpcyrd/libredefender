@@ -304,7 +304,11 @@ pub fn parse_database_age(mut buf: &[u8]) -> Result<DateTime<Utc>> {
 
     let num = atoi::atoi::<i64>(buf).context("Failed to parse timestamp as number")?;
 
-    Ok(Utc.timestamp(num, 0))
+    let timestamp = Utc
+        .timestamp_opt(num, 0)
+        .single()
+        .with_context(|| anyhow!("Timestamp is not a valid UTC timestamp: {:?}", num))?;
+    Ok(timestamp)
 }
 
 #[cfg(test)]
@@ -347,6 +351,11 @@ mod tests {
             b"ClamAV-VDB:09 May 2021 07-08 -0400:26165:3978101:63:X:X:raynman:1620558516    ",
         )
         .unwrap();
-        assert_eq!(dt, Utc.ymd(2021, 5, 9).and_hms(11, 8, 36));
+        assert_eq!(
+            dt,
+            Utc.with_ymd_and_hms(2021, 5, 9, 11, 8, 36)
+                .single()
+                .unwrap()
+        );
     }
 }

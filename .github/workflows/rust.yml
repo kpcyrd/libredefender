@@ -17,7 +17,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install dependencies
-      run: sudo apt-get install libclamav-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install libclamav-dev
     - name: Build
       run: cargo build --verbose
     - name: Run tests
@@ -33,7 +35,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install dependencies
-      run: sudo apt-get install libclamav-dev clamav-freshclam
+      run: |
+        sudo apt-get update
+        sudo apt-get install libclamav-dev clamav-freshclam
     - name: Disable apparmor
       run: sudo apparmor_parser -R /etc/apparmor.d/usr.bin.freshclam
     - name: Fetch database
@@ -53,7 +57,9 @@ jobs:
         override: true
         components: clippy
     - name: Install dependencies
-      run: sudo apt-get install libclamav-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install libclamav-dev
     - uses: actions-rs/cargo@v1
       with:
         command: clippy

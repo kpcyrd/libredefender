@@ -1,5 +1,5 @@
 use crate::errors::*;
-use clap::{ArgAction, CommandFactory, Parser, Subcommand};
+use clap::{ArgAction, CommandFactory, Parser};
 use clap_complete::Shell;
 use std::io::stdout;
 use std::path::PathBuf;
