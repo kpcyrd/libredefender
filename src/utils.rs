@@ -19,7 +19,7 @@ pub fn ask_confirmation(text: &str) -> Result<bool> {
 }
 
 pub fn ensure_deleted(path: &Path) -> Result<()> {
-    match fs::remove_file(&path) {
+    match fs::remove_file(path) {
         Ok(()) => (),
         Err(err) if err.kind() == io::ErrorKind::NotFound => (),
         err => err.with_context(|| anyhow!("Failed to delete {:?}", path))?,

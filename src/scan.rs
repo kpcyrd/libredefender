@@ -304,7 +304,11 @@ pub fn parse_database_age(mut buf: &[u8]) -> Result<DateTime<Utc>> {
 
     let num = atoi::atoi::<i64>(buf).context("Failed to parse timestamp as number")?;
 
-    Ok(Utc.timestamp(num, 0))
+    let timestamp = Utc
+        .timestamp_opt(num, 0)
+        .single()
+        .with_context(|| anyhow!("Timestamp is not a valid UTC timestamp: {:?}", num))?;
+    Ok(timestamp)
 }
 
 #[cfg(test)]

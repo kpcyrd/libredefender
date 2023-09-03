@@ -13,16 +13,16 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.40"
-atoi = "1"
+atoi = "2"
 chrono = { version = "0.4.19", features = ["serde"] }
 chrono-humanize = "0.2.1"
-clamav-rs = "0.5.3"
+clamav-rs = { git = "https://github.com/kpcyrd/clamav-rs", branch = "clamav-1.2" }
 clap = { version = "4.0.32", features = ["derive"] }
 clap_complete = "4.0.7"
 colored = "2.0.0"
 config = { version = "0.13", default-features = false, features = ["toml"] }
 crossbeam-channel = "0.5.1"
-dirs = "4"
+dirs = "5"
 env_logger = "0.10"
 glob = "0.3.0"
 human-size = "0.4.1"
