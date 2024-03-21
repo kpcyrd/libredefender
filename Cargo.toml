@@ -14,7 +14,7 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.40"
 atoi = "2"
-chrono = { version = "0.4.19", features = ["serde"] }
+chrono = { version = "0.4.35", features = ["serde"] }
 chrono-humanize = "0.2.1"
 clamav-rs = { git = "https://github.com/kpcyrd/clamav-rs", branch = "clamav-1.2" }
 clap = { version = "4.0.32", features = ["derive"] }
