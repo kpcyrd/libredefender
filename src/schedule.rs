@@ -50,7 +50,7 @@ impl PreferedHours {
                 )
                 .earliest()
                 .unwrap()
-                + chrono::Duration::hours(24);
+                + chrono::Duration::try_hours(24).unwrap();
             next_start - dt
         }
     }
@@ -84,7 +84,7 @@ impl PreferedHours {
                 )
                 .earliest()
                 .unwrap()
-                + chrono::Duration::hours(24);
+                + chrono::Duration::try_hours(24).unwrap();
             next_end - dt
         }
     }
@@ -151,7 +151,7 @@ fn robust_sleep(sleep: chrono::Duration) -> Result<()> {
             break;
         }
 
-        let next_sleep = cmp::min(chrono::Duration::seconds(600), remaining);
+        let next_sleep = cmp::min(chrono::Duration::try_seconds(600).unwrap(), remaining);
         trace!("Sleeping for {:?}", next_sleep);
 
         thread::sleep(next_sleep.to_std()?);
@@ -161,7 +161,7 @@ fn robust_sleep(sleep: chrono::Duration) -> Result<()> {
 }
 
 pub fn run(_args: &args::Scheduler) -> Result<()> {
-    let interval = chrono::Duration::hours(24);
+    let interval = chrono::Duration::try_hours(24).unwrap();
 
     loop {
         let now = Local::now();
@@ -258,7 +258,7 @@ pub fn run(_args: &args::Scheduler) -> Result<()> {
                             let preferred_hours_duration = (end - start).num_seconds();
                             let jitter = rng.gen_range(0..preferred_hours_duration);
 
-                            start + chrono::Duration::seconds(jitter)
+                            start + chrono::Duration::try_seconds(jitter).unwrap()
                         },
                     )
                 }
@@ -311,7 +311,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_start(now);
-        assert_eq!(duration, chrono::Duration::seconds(5 * 3600 + 23 * 60));
+        assert_eq!(duration, chrono::Duration::try_seconds(5 * 3600 + 23 * 60).unwrap());
     }
 
     #[test]
@@ -322,7 +322,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_end(now);
-        assert_eq!(duration, chrono::Duration::seconds(19 * 3600 + 23 * 60));
+        assert_eq!(duration, chrono::Duration::try_seconds(19 * 3600 + 23 * 60).unwrap());
     }
 
     #[test]
@@ -333,7 +333,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_start(now);
-        assert_eq!(duration, chrono::Duration::seconds(0));
+        assert_eq!(duration, chrono::Duration::try_seconds(0).unwrap());
     }
 
     #[test]
@@ -344,7 +344,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("19:00:00-09:00:00").unwrap();
         let duration = ph.until_next_end(now);
-        assert_eq!(duration, chrono::Duration::seconds(9 * 3600 + 23 * 60));
+        assert_eq!(duration, chrono::Duration::try_seconds(9 * 3600 + 23 * 60).unwrap());
     }
 
     #[test]
@@ -355,7 +355,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
         let duration = ph.until_next_start(now);
-        assert_eq!(duration, chrono::Duration::seconds(0));
+        assert_eq!(duration, chrono::Duration::try_seconds(0).unwrap());
     }
 
     #[test]
@@ -366,7 +366,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("09:00:00-19:00:00").unwrap();
         let duration = ph.until_next_end(now);
-        assert_eq!(duration, chrono::Duration::seconds(5 * 3600 + 23 * 60));
+        assert_eq!(duration, chrono::Duration::try_seconds(5 * 3600 + 23 * 60).unwrap());
     }
 
     #[test]
@@ -377,7 +377,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
         let duration = ph.until_next_start(now);
-        assert_eq!(duration, chrono::Duration::seconds(4 * 3600 + 37 * 60));
+        assert_eq!(duration, chrono::Duration::try_seconds(4 * 3600 + 37 * 60).unwrap());
     }
 
     #[test]
@@ -388,7 +388,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("13:37:00-23:00:00").unwrap();
         let duration = ph.until_next_end(now);
-        assert_eq!(duration, chrono::Duration::seconds(14 * 3600));
+        assert_eq!(duration, chrono::Duration::try_seconds(14 * 3600).unwrap());
     }
 
     #[test]
@@ -399,7 +399,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
         let duration = ph.until_next_start(now);
-        assert_eq!(duration, chrono::Duration::seconds(14 * 3600 + 23 * 60));
+        assert_eq!(duration, chrono::Duration::try_seconds(14 * 3600 + 23 * 60).unwrap());
     }
 
     #[test]
@@ -410,7 +410,7 @@ mod tests {
             .unwrap();
         let ph = PreferedHours::from_str("4:00:00-9:00:00").unwrap();
         let duration = ph.until_next_end(now);
-        assert_eq!(duration, chrono::Duration::seconds(19 * 3600 + 23 * 60));
+        assert_eq!(duration, chrono::Duration::try_seconds(19 * 3600 + 23 * 60).unwrap());
     }
 
     #[test]
